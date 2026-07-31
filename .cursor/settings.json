@@ -1,3 +1,7 @@
 {
-  "editor.formatOnSave": true
+  "plugins": {
+    "firebase": {
+      "enabled": true
+    }
+  }
 }

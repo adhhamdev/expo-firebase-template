@@ -1,6 +1,9 @@
 {
-  "typescript.tsdk": "node_modules/typescript/lib",
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
-  }
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit",
+    "source.sortMembers": "explicit"
+  },
+  "js/ts.experimental.useTsgo": true,
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
