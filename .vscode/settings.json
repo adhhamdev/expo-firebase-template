@@ -4,6 +4,5 @@
     "source.organizeImports": "explicit",
     "source.sortMembers": "explicit"
   },
-  "js/ts.experimental.useTsgo": true,
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "js/ts.experimental.useTsgo": true
 }
