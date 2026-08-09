@@ -10,6 +10,7 @@ A clean, scalable, AI/agent-friendly template extracted from real production pat
 | Stack | Expo SDK 57 · React Native 0.86 · React 19 · TypeScript |
 | Package manager | **Bun** (preferred) · npm / yarn also fine |
 | Backend | Firebase Auth · Firestore · Storage · Cloud Functions |
+| Auth | Email · **Google** · **Apple** · **SMS OTP** · **PNV (instant)** |
 | Delivery | EAS Build · EAS Update |
 | Agents | Vendored Expo skills · Callstack agent-device · Cursor / Claude / VS Code configs |
 
@@ -20,6 +21,7 @@ A clean, scalable, AI/agent-friendly template extracted from real production pat
 ## Why this template
 
 - **No repetitive setup** — Firebase init, providers, EAS multi-env, rules, functions, TypeScript paths, and agent rules are already wired.
+- **Auth ready** — Google One Tap, Apple Sign-In, SMS OTP, and Firebase Phone Number Verification (PNV) client + callable are included. See [AUTH_SETUP.md](./AUTH_SETUP.md).
 - **Feature-based & scalable** — `src/features/<domain>/` keeps domain logic isolated; screens stay thin.
 - **High performance defaults** — React Compiler, FlashList-ready, offline Firestore persistence, React Query, Reanimated.
 - **AI / Agent friendly** — Full Expo agent skills tree (from production GemFort), `AGENTS.md`, Cursor / Claude / VS Code settings, plus agent-device support.
@@ -119,14 +121,15 @@ src/
 ├── constants/           # Design tokens, theme
 ├── hooks/
 ├── lib/
-│   ├── firebase/        # Init, auth, db, storage, callFunction
+│   ├── firebase/        # Init, auth, social, phone SMS/PNV, storage, callFunction
 │   ├── errors.ts
 │   └── validation/
-├── providers/           # Auth, Query, Theme, Toast, Loading, Confirm
+├── providers/           # Auth, Query, Theme, Toast, Loading, Confirm, Push
 ├── navigation/
 └── types/
-functions/               # Cloud Functions (TypeScript)
+functions/               # Cloud Functions (incl. linkVerifiedPhone for PNV)
 google-services/         # Per-env native Firebase config
+AUTH_SETUP.md            # Google · Apple · SMS · PNV console + client guide
 assets/
 .agents/skills/          # Full Expo agent skills (vendored from GemFort)
 .claude/skills/          # Claude-facing skill copies
@@ -146,6 +149,8 @@ Path aliases: `@/*` → `./src/*`, `@/assets/*` → `./assets/*`.
 | Navigation | Expo Router (typed routes) |
 | Data | TanStack React Query, Zod |
 | Backend | `@react-native-firebase/*` + `firebase` JS where needed |
+| Social auth | `react-native-nitro-google-signin`, `expo-apple-authentication` |
+| Phone | RNFB Phone Auth (SMS) + `@react-native-firebase/phone-number-verification` (PNV) |
 | UI / motion | Reanimated 4, Gesture Handler, Keyboard Controller |
 | Lists | `@shopify/flash-list` (add when you need lists) |
 | Toasts | `sonner-native` |
@@ -299,6 +304,23 @@ Docs: https://firebase.google.com/docs/cli
 
 ---
 
+## Auth (Google · Apple · SMS · PNV)
+
+Full console + client guide: **[AUTH_SETUP.md](./AUTH_SETUP.md)**.
+
+| Module | Path |
+|--------|------|
+| Google / Apple | `src/lib/firebase/social-auth` |
+| SMS OTP | `src/lib/firebase/phone-auth` |
+| PNV (Android instant) | `src/lib/firebase/phone-pnv` |
+| Server link | `functions/src/auth/link-verified-phone.ts` |
+
+Typical phone flow: **PNV first** → on `fallback-sms` run SMS OTP. iOS always uses SMS.
+
+After enabling providers and SHA fingerprints, **rebuild** the dev client (native modules cannot be added via OTA).
+
+---
+
 ## Bun
 
 This template prefers [Bun](https://bun.sh) for speed and a single toolchain.
@@ -421,9 +443,9 @@ Always use **versioned** Expo docs: https://docs.expo.dev/versions/v57.0.0/
 
 ## Firebase (client)
 
-- **Client**: `src/lib/firebase/` — warm-up with offline persistence, auth service, storage helpers, callable functions.
+- **Client**: `src/lib/firebase/` — warm-up with offline persistence, email auth, **social**, **phone SMS/PNV**, storage, callables.
 - **Rules**: start from `firestore.rules` and `storage.rules` (locked down; expand per feature).
-- **Functions**: `functions/` — TypeScript, region placeholder, example hello + scheduled stub.
+- **Functions**: `functions/` — includes `linkVerifiedPhone` for PNV JWT verification.
 - **Deploy**: `bun run firebase:deploy` (requires Firebase CLI + project).
 
 ---
