@@ -1,25 +1,57 @@
-export const lightColors = {
-  background: "#FFFFFF",
-  surface: "#F5F5F5",
-  primary: "#2563EB",
-  primaryText: "#FFFFFF",
-  text: "#0A0A0A",
-  textSecondary: "#525252",
-  border: "#E5E5E5",
-  danger: "#DC2626",
-  success: "#16A34A",
-};
+/**
+ * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
+ * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ */
 
-export const darkColors = {
-  background: "#0A0A0A",
-  surface: "#171717",
-  primary: "#3B82F6",
-  primaryText: "#FFFFFF",
-  text: "#FAFAFA",
-  textSecondary: "#A3A3A3",
-  border: "#262626",
-  danger: "#EF4444",
-  success: "#22C55E",
-};
+import { Platform } from 'react-native';
 
-export type AppColors = typeof lightColors;
+export const Colors = {
+  light: {
+    text: '#000000',
+    background: '#ffffff',
+    backgroundElement: '#F0F0F3',
+    backgroundSelected: '#E0E1E6',
+    textSecondary: '#60646C',
+  },
+  dark: {
+    text: '#ffffff',
+    background: '#000000',
+    backgroundElement: '#212225',
+    backgroundSelected: '#2E3135',
+    textSecondary: '#B0B4BA',
+  },
+} as const;
+
+export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
+
+export const Fonts = Platform.select({
+  ios: {
+    /** App sans — Poppins (loaded in root layout) */
+    sans: 'Poppins_400Regular',
+    /** iOS `UIFontDescriptorSystemDesignSerif` */
+    serif: 'ui-serif',
+    /** iOS `UIFontDescriptorSystemDesignRounded` */
+    rounded: 'ui-rounded',
+    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
+    mono: 'ui-monospace',
+  },
+  default: {
+    sans: 'Poppins_400Regular',
+    serif: 'serif',
+    rounded: 'Poppins_400Regular',
+    mono: 'monospace',
+  },
+});
+
+export const Spacing = {
+  half: 2,
+  one: 4,
+  two: 8,
+  three: 16,
+  four: 24,
+  five: 32,
+  six: 64,
+} as const;
+
+export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
+export const MaxContentWidth = 800;

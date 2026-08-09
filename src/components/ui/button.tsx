@@ -1,65 +1,112 @@
-import { useAppTheme } from "@/hooks/use-app-theme";
-import { FontFamily, Radius, Spacing } from "@/constants/design-tokens";
 import {
   ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
+  type PressableProps,
+  type StyleProp,
+  type TextStyle,
   type ViewStyle,
-} from "react-native";
+} from 'react-native';
 
-type Props = {
+import { Icon, type IconName } from '@/components/ui/icon';
+import { Palette, Radius, TouchTarget, Typography } from '@/constants/design-tokens';
+import { useAppTheme } from '@/hooks/use-app-theme';
+import { haptics, type HapticKind } from '@/lib/haptics';
+import { useIsBusy } from '@/providers/loading-provider';
+
+type Variant = 'primary' | 'secondary' | 'ghost' | 'destructive' | 'whatsapp' | 'phone';
+
+type ButtonProps = PressableProps & {
   title: string;
-  onPress: () => void;
+  variant?: Variant;
   loading?: boolean;
-  disabled?: boolean;
-  variant?: "primary" | "secondary" | "ghost";
-  style?: ViewStyle;
+  icon?: IconName;
+  /** Override icon color (defaults to the variant text color). */
+  iconColor?: string;
+  style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
+  /** Press-down haptic. Default `light`; set `false` to disable. */
+  haptic?: HapticKind | false;
 };
 
 export function Button({
   title,
-  onPress,
+  variant = 'primary',
   loading,
+  icon,
+  iconColor: iconColorProp,
   disabled,
-  variant = "primary",
   style,
-}: Props) {
+  textStyle,
+  accessibilityLabel,
+  haptic = 'light',
+  onPressIn,
+  ...props
+}: ButtonProps) {
   const { colors } = useAppTheme();
-  const isPrimary = variant === "primary";
-  const isGhost = variant === "ghost";
+  const globalBusy = useIsBusy();
+
+  const variantStyles: Record<Variant, { container: ViewStyle; text: TextStyle }> = {
+    primary: {
+      container: { backgroundColor: colors.primary },
+      text: { color: colors.textInverse },
+    },
+    secondary: {
+      container: {
+        backgroundColor: colors.surface,
+        borderWidth: 1.5,
+        borderColor: colors.primary,
+      },
+      text: { color: colors.primary },
+    },
+    ghost: {
+      container: { backgroundColor: 'transparent' },
+      text: { color: colors.primary },
+    },
+    destructive: {
+      container: { backgroundColor: colors.error },
+      text: { color: colors.onError },
+    },
+    whatsapp: {
+      container: { backgroundColor: Palette.whatsapp },
+      text: { color: Palette.white },
+    },
+    phone: {
+      container: { backgroundColor: Palette.phone },
+      text: { color: Palette.white },
+    },
+  };
+
+  const v = variantStyles[variant];
+  const iconColor = iconColorProp ?? (v.text.color as string) ?? colors.onPrimary;
+  // Block every button while a global mutation overlay is active.
+  const isDisabled = disabled || loading || globalBusy;
 
   return (
     <Pressable
-      onPress={onPress}
-      disabled={disabled || loading}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? title}
       style={({ pressed }) => [
         styles.base,
-        {
-          backgroundColor: isGhost
-            ? "transparent"
-            : isPrimary
-              ? colors.primary
-              : colors.surface,
-          borderColor: isGhost ? colors.border : "transparent",
-          borderWidth: isGhost ? 1 : 0,
-          opacity: pressed || disabled || loading ? 0.7 : 1,
-        },
+        v.container,
+        isDisabled && styles.disabled,
+        pressed && styles.pressed,
         style,
       ]}
-    >
+      disabled={isDisabled}
+      onPressIn={(e) => {
+        if (!isDisabled && haptic) haptics.play(haptic);
+        onPressIn?.(e);
+      }}
+      {...props}>
       {loading ? (
-        <ActivityIndicator color={isPrimary ? colors.primaryText : colors.text} />
+        <ActivityIndicator color={iconColor} />
       ) : (
-        <Text
-          style={{
-            color: isPrimary ? colors.primaryText : colors.text,
-            fontFamily: FontFamily.semibold,
-            fontSize: 16,
-          }}
-        >
-          {title}
-        </Text>
+        <>
+          {icon ? <Icon name={icon} size={18} color={iconColor} /> : null}
+          <Text style={[styles.text, v.text, textStyle]}>{title}</Text>
+        </>
       )}
     </Pressable>
   );
@@ -67,10 +114,23 @@ export function Button({
 
 const styles = StyleSheet.create({
   base: {
-    height: 48,
-    borderRadius: Radius.md,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: Spacing.lg,
+    minHeight: TouchTarget.minHeight,
+    borderRadius: Radius.full,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 8,
+  },
+  text: {
+    ...Typography.headlineMdMobile,
+  },
+  disabled: {
+    opacity: 0.45,
+  },
+  pressed: {
+    transform: [{ scale: 0.98 }],
+    opacity: 0.92,
   },
 });

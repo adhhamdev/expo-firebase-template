@@ -1,7 +1,10 @@
+/** @type {import('jest').Config} */
 module.exports = {
-  preset: "jest-expo",
-  testPathIgnorePatterns: ["/node_modules/", "/functions/"],
-  transformIgnorePatterns: [
-    "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@shopify/flash-list|@tanstack/.*|sonner-native)",
-  ],
+  preset: 'jest-expo',
+  testMatch: ['**/__tests__/**/*.test.ts?(x)', '**/?(*.)+(spec|test).ts?(x)'],
+  testPathIgnorePatterns: ['/node_modules/', '/functions/', '/android/', '/ios/'],
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
+  clearMocks: true,
 };

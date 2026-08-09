@@ -1,56 +1,94 @@
-import { useAppTheme } from "@/hooks/use-app-theme";
-import { FontFamily, Radius, Spacing } from "@/constants/design-tokens";
-import { StyleSheet, Text, TextInput, View, type TextInputProps } from "react-native";
+import type { ReactNode } from 'react';
+import { StyleSheet, TextInput, View, Text, type TextInputProps } from 'react-native';
 
-type Props = TextInputProps & {
+import { Icon, type IconName } from '@/components/ui/icon';
+import { Radius, Spacing, Typography } from '@/constants/design-tokens';
+import { useAppTheme } from '@/hooks/use-app-theme';
+
+type InputProps = TextInputProps & {
   label?: string;
   error?: string;
+  helperText?: string;
+  /** Leading icon to clarify the field for non-technical users. */
+  leftIcon?: IconName;
+  /** Custom leading element (e.g. brand mark) — preferred over leftIcon when set. */
+  leftElement?: ReactNode;
+  /** Trailing element inside the field (e.g. open-link button). */
+  rightElement?: ReactNode;
 };
 
-export function Input({ label, error, style, ...rest }: Props) {
+export function Input({
+  label,
+  error,
+  helperText,
+  leftIcon,
+  leftElement,
+  rightElement,
+  style,
+  ...props
+}: InputProps) {
   const { colors } = useAppTheme();
+  const borderColor = error ? colors.error : colors.border;
+  const iconColor = error ? colors.error : colors.textMuted;
 
   return (
     <View style={styles.wrap}>
-      {label ? (
-        <Text style={[styles.label, { color: colors.textSecondary }]}>{label}</Text>
-      ) : null}
-      <TextInput
-        placeholderTextColor={colors.textSecondary}
+      {label ? <Text style={[styles.label, { color: colors.textSecondary }]}>{label}</Text> : null}
+      <View
         style={[
-          styles.input,
+          styles.field,
           {
-            color: colors.text,
-            backgroundColor: colors.surface,
-            borderColor: error ? colors.danger : colors.border,
+            backgroundColor: colors.surfaceMuted,
+            borderColor,
+            borderRadius: Radius.lg,
+            borderCurve: 'continuous',
           },
-          style,
-        ]}
-        {...rest}
-      />
+        ]}>
+        {props.multiline
+          ? null
+          : leftElement ?? (leftIcon ? <Icon name={leftIcon} size={20} color={iconColor} /> : null)}
+        <TextInput
+          placeholderTextColor={colors.textMuted}
+          style={[styles.input, { color: colors.text }, style]}
+          accessibilityLabel={label}
+          {...props}
+        />
+        {rightElement ? <View style={styles.right}>{rightElement}</View> : null}
+      </View>
       {error ? (
-        <Text style={[styles.error, { color: colors.danger }]}>{error}</Text>
+        <Text style={[styles.error, { color: colors.error }]} accessibilityLiveRegion="polite">
+          {error}
+        </Text>
+      ) : helperText ? (
+        <Text style={[styles.helper, { color: colors.textMuted }]}>{helperText}</Text>
       ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { gap: Spacing.xs },
-  label: {
-    fontFamily: FontFamily.medium,
-    fontSize: 13,
+  wrap: { gap: 6 },
+  label: { ...Typography.labelMd },
+  field: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    borderWidth: 1.5,
+    paddingHorizontal: Spacing.gutterMd,
+    minHeight: 52,
   },
   input: {
-    height: 48,
-    borderWidth: 1,
-    borderRadius: Radius.md,
-    paddingHorizontal: Spacing.md,
-    fontFamily: FontFamily.regular,
+    ...Typography.bodyMd,
+    flex: 1,
+    paddingVertical: 14,
+    minHeight: 52,
     fontSize: 16,
   },
-  error: {
-    fontFamily: FontFamily.regular,
-    fontSize: 12,
+  right: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'stretch',
   },
+  error: { ...Typography.bodySmall },
+  helper: { ...Typography.bodySmall },
 });
