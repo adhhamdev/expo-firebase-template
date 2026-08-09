@@ -36,6 +36,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     bundleIdentifier: bundleId,
     supportsTablet: false,
+    usesAppleSignIn: true,
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
     },
@@ -64,6 +65,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     "expo-image",
     "expo-secure-store",
     "expo-status-bar",
+    "expo-apple-authentication",
+    "react-native-nitro-google-signin",
     "@react-native-firebase/app",
     "@react-native-firebase/auth",
     "@react-native-vector-icons/material-icons",
