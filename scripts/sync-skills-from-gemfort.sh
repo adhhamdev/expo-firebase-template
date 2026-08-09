@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Sync agent skills + IDE agent configs from orbitratechnology/gemfort
-# into this repo (adhhamdev/expo-firebase-template).
+# Sync agent skills + IDE configs from orbitratechnology/gemfort into this repo.
+# Prefer the GitHub Action: Actions → "Sync skills from gemfort" → Run workflow.
 #
-# Usage (from this repo root):
+# Local usage (from repo root):
 #   bash scripts/sync-skills-from-gemfort.sh
 #
 set -euo pipefail
@@ -16,21 +16,10 @@ git clone --depth 1 https://github.com/orbitratechnology/gemfort.git "$TMP/gemfo
 
 SRC="$TMP/gemfort"
 
-copy_dir() {
-  local from="$1" to="$2"
-  if [[ -d "$from" ]]; then
-    mkdir -p "$to"
-    rsync -a --delete "$from/" "$to/"
-    echo "  synced $to"
-  else
-    echo "  skip missing $from"
-  fi
-}
-
-echo "Syncing..."
-copy_dir "$SRC/.agents/skills" "$ROOT/.agents/skills"
-copy_dir "$SRC/.claude/skills" "$ROOT/.claude/skills"
-
+mkdir -p "$ROOT/.agents" "$ROOT/.claude" "$ROOT/.cursor" "$ROOT/.vscode"
+rm -rf "$ROOT/.agents/skills" "$ROOT/.claude/skills"
+cp -a "$SRC/.agents/skills" "$ROOT/.agents/skills"
+cp -a "$SRC/.claude/skills" "$ROOT/.claude/skills"
 cp -f "$SRC/.cursor/settings.json" "$ROOT/.cursor/settings.json"
 cp -f "$SRC/.claude/settings.json" "$ROOT/.claude/settings.json"
 cp -f "$SRC/.vscode/settings.json" "$ROOT/.vscode/settings.json"
@@ -39,4 +28,7 @@ cp -f "$SRC/AGENTS.md" "$ROOT/AGENTS.md"
 cp -f "$SRC/CLAUDE.md" "$ROOT/CLAUDE.md"
 cp -f "$SRC/skills-lock.json" "$ROOT/skills-lock.json"
 
+echo "Synced:"
+ls "$ROOT/.agents/skills"
+ls "$ROOT/.claude/skills"
 echo "Done. Review with: git status"

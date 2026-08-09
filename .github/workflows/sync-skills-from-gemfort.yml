@@ -1,0 +1,53 @@
+name: Sync skills from gemfort
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout template
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Clone gemfort and copy agent files
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/orbitratechnology/gemfort.git /tmp/gemfort
+
+          rm -rf .agents/skills .claude/skills
+          mkdir -p .agents .claude .cursor .vscode
+
+          cp -a /tmp/gemfort/.agents/skills .agents/skills
+          cp -a /tmp/gemfort/.claude/skills .claude/skills
+
+          cp -f /tmp/gemfort/.cursor/settings.json .cursor/settings.json
+          cp -f /tmp/gemfort/.claude/settings.json .claude/settings.json
+          cp -f /tmp/gemfort/.vscode/settings.json .vscode/settings.json
+          cp -f /tmp/gemfort/.vscode/extensions.json .vscode/extensions.json
+          cp -f /tmp/gemfort/AGENTS.md AGENTS.md
+          cp -f /tmp/gemfort/CLAUDE.md CLAUDE.md
+          cp -f /tmp/gemfort/skills-lock.json skills-lock.json
+
+          echo "Synced skills:"
+          ls .agents/skills
+          ls .claude/skills
+          find .agents .claude -type f | wc -l
+
+      - name: Commit and push
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "chore: sync agent skills and IDE configs from orbitratechnology/gemfort"
+          git push
