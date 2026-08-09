@@ -1,8 +1,12 @@
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# dependencies
 node_modules/
 
 # Expo
 .expo/
 dist/
+dist-web/
 web-build/
 expo-env.d.ts
 
@@ -14,8 +18,6 @@ expo-env.d.ts
 *.p12
 *.key
 *.mobileprovision
-/ios
-/android
 
 # Metro
 .metro-health-check*
@@ -29,13 +31,31 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env
+# local env files
 .env
 .env*.local
 
 # typescript
 *.tsbuildinfo
 
-# Firebase
-*-debug.log
-.firebase/
+example
+
+# generated native folders
+/ios
+/android
+
+*.plan.md
+
+/dogfood-output
+/docs
+/plan
+
+# Firebase native configuration is supplied to cloud builds through sensitive
+# EAS file environment variables. Keep only ignored local copies for native runs.
+google-services.json
+google-services*.json
+GoogleService-Info.plist
+GoogleService-Info*.plist
+
+
+*.log
