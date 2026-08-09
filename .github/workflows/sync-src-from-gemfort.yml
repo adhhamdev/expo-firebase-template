@@ -9,9 +9,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Clone gemfort and copy reusable layers
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          git clone --depth 1 https://github.com/orbitratechnology/gemfort.git /tmp/gemfort
+          # Prefer authenticated clone when GEMFORT_TOKEN is set (private source).
+          if [ -n "${{ secrets.GEMFORT_TOKEN }}" ]; then
+            git clone --depth 1 https://x-access-token:${{ secrets.GEMFORT_TOKEN }}@github.com/orbitratechnology/gemfort.git /tmp/gemfort
+          else
+            git clone --depth 1 https://github.com/orbitratechnology/gemfort.git /tmp/gemfort || {
+              echo "gemfort not reachable; skipping sync"
+              exit 0
+            }
+          fi
 
           cp /tmp/gemfort/babel.config.js .
           cp /tmp/gemfort/metro.config.js .
@@ -25,9 +35,13 @@ jobs:
 
           for f in button.tsx input.tsx screen.tsx card.tsx elevated-card.tsx empty-state.tsx \
             loading-overlay.tsx confirm-dialog.tsx form-section.tsx form-footer.tsx \
-            skeleton-list.tsx stack-header.tsx collapsible.tsx chip-select.tsx; do
-            cp "/tmp/gemfort/src/components/ui/$f" "src/components/ui/$f"
+            skeleton-list.tsx stack-header.tsx collapsible.tsx chip-select.tsx icon.tsx; do
+            [ -f "/tmp/gemfort/src/components/ui/$f" ] && cp "/tmp/gemfort/src/components/ui/$f" "src/components/ui/$f"
           done
+          # Template uses Material-only icons — strip FA aliases if present
+          if [ -f src/components/ui/icon.tsx ]; then
+            sed -i 's/GemFort/App/g' src/components/ui/icon.tsx || true
+          fi
 
           for f in query-provider.tsx theme-provider.tsx loading-provider.tsx confirm-provider.tsx toast-provider.tsx; do
             cp "/tmp/gemfort/src/providers/$f" "src/providers/$f"
@@ -45,7 +59,7 @@ jobs:
 
           for f in init.ts init.native.ts config.ts config.native.ts firebase-config.ts \
             auth.native.ts auth-types.ts auth-types.native.ts db.ts db.native.ts \
-            call-function.ts storage-service.ts messaging.ts; do
+            call-function.ts storage-service.ts messaging.ts functions-region.ts; do
             [ -f "/tmp/gemfort/src/lib/firebase/$f" ] && cp "/tmp/gemfort/src/lib/firebase/$f" "src/lib/firebase/$f"
           done
 
