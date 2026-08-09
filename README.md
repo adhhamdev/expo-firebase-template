@@ -11,7 +11,7 @@ A clean, scalable, AI/agent-friendly template extracted from real production pat
 | Package manager | **Bun** (preferred) · npm / yarn also fine |
 | Backend | Firebase Auth · Firestore · Storage · Cloud Functions |
 | Delivery | EAS Build · EAS Update |
-| Agents | Expo skills · Callstack agent-device · Cursor / Claude / VS Code configs |
+| Agents | Vendored Expo skills · Callstack agent-device · Cursor / Claude / VS Code configs |
 
 > **Requires a development build.** React Native Firebase does **not** work in Expo Go.
 
@@ -22,7 +22,7 @@ A clean, scalable, AI/agent-friendly template extracted from real production pat
 - **No repetitive setup** — Firebase init, providers, EAS multi-env, rules, functions, TypeScript paths, and agent rules are already wired.
 - **Feature-based & scalable** — `src/features/<domain>/` keeps domain logic isolated; screens stay thin.
 - **High performance defaults** — React Compiler, FlashList-ready, offline Firestore persistence, React Query, Reanimated.
-- **AI / Agent friendly** — `AGENTS.md`, `.agents/skills/`, Cursor / Claude / VS Code settings aligned with production apps; official Expo skills + agent-device supported.
+- **AI / Agent friendly** — Full Expo agent skills tree (from production GemFort), `AGENTS.md`, Cursor / Claude / VS Code settings, plus agent-device support.
 - **Placeholders only** — every project-specific value (bundle IDs, Firebase keys, EAS project ID, app name) is a clear placeholder.
 - **Bun-first** — lockfile and scripts assume Bun; npm/yarn still work.
 
@@ -128,8 +128,9 @@ src/
 functions/               # Cloud Functions (TypeScript)
 google-services/         # Per-env native Firebase config
 assets/
-.agents/skills/          # Agent skills (Expo-oriented + agent-device)
-.cursor/ · .claude/ · .vscode/
+.agents/skills/          # Full Expo agent skills (vendored from GemFort)
+.claude/skills/          # Claude-facing skill copies
+.cursor/ · .vscode/
 ```
 
 Path aliases: `@/*` → `./src/*`, `@/assets/*` → `./assets/*`.
@@ -371,24 +372,48 @@ More: https://oss.callstack.com/agent-device/ · https://github.com/callstack/ag
 
 ## Agent / AI setup
 
-Aligned with production Orbitra apps (e.g. GemFort):
+Synced from production Orbitra apps ([GemFort](https://github.com/orbitratechnology/gemfort)):
 
 | Path | Role |
 |------|------|
-| `AGENTS.md` | Forces versioned Expo 57 docs + project conventions |
+| `AGENTS.md` | Forces versioned Expo 57 docs |
 | `CLAUDE.md` | Points Claude at `AGENTS.md` |
-| `.agents/skills/` | Drop / install Expo + agent-device skills |
-| `.cursor/settings.json` | Firebase plugin enabled for Cursor |
-| `.claude/settings.json` | Expo official plugin for Claude Code |
-| `.vscode/` | Format-on-save, Expo tools recommendation |
+| `skills-lock.json` | Lockfile for Expo skill sources/hashes |
+| `.agents/skills/` | **Vendored** Expo skills (full tree) |
+| `.claude/skills/` | Claude copies of key skills |
+| `.cursor/settings.json` | Firebase plugin for Cursor |
+| `.claude/settings.json` | `expo@claude-plugins-official` for Claude Code |
+| `.vscode/` | Format-on-save + Expo tools recommendation |
 
-### Install Expo skills
+### Skills included (in-repo)
+
+| Skill | Use for |
+|-------|--------|
+| `building-native-ui` | Native-feeling screens, navigation, controls, media, effects |
+| `expo-dev-client` | Development builds (required — not Expo Go) |
+| `eas-simulator` | Remote iOS/Android simulators on EAS |
+| `eas-update-insights` | EAS Update health and rollouts |
+| `expo-api-routes` | Expo Router API routes + EAS Hosting |
+| `expo-module` | Native modules / config plugins |
+| `expo-ui` | `@expo/ui` (universal / SwiftUI / Compose) |
+| `native-data-fetching` | React Query, caching, offline, loaders |
+| `upgrading-expo` | SDK upgrades and migrations |
+| `expo-skill-eval` | Skill evaluation harness |
+
+Re-sync from GemFort anytime:
 
 ```bash
-npx skills@latest add expo/skills --skill '*'
+# GitHub Actions: Actions → "Sync skills from gemfort" → Run workflow
+# or locally:
+bash scripts/sync-skills-from-gemfort.sh
 ```
 
-Claude Code: plugin is already enabled in `.claude/settings.json` (`expo@claude-plugins-official`).
+Optional extras:
+
+```bash
+npx skills@latest add expo/skills --skill '*'   # refresh from upstream
+npx skills add callstackincubator/agent-device  # device QA skill
+```
 
 Always use **versioned** Expo docs: https://docs.expo.dev/versions/v57.0.0/
 
