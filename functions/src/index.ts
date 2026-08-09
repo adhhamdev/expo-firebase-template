@@ -8,6 +8,8 @@ initializeApp();
 // TODO: set your preferred region
 setGlobalOptions({ region: "asia-south1" });
 
+export { linkVerifiedPhone } from "./auth/link-verified-phone";
+
 /** Example callable — replace with real domain functions */
 export const healthCheck = onCall(async (request) => {
   if (!request.auth) {

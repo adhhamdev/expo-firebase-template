@@ -10,6 +10,7 @@ import {
   serverTimestamp,
   updateDoc,
 } from "@/lib/firebase/db";
+import { normalizePhoneNumber } from "@/lib/firebase/phone-utils";
 
 /**
  * Persist the device push token on the user document.
@@ -28,4 +29,24 @@ export async function updateFcmToken(uid: string, token: string | null) {
     fcmToken: token,
     updatedAt: serverTimestamp(),
   });
+}
+
+/**
+ * Save a phone number selected by the user before SMS/PNV proof.
+ * Marks phoneVerified false until OTP or PNV completes.
+ */
+export async function savePhoneForVerification(phone: string) {
+  const user = getFirebaseAuth().currentUser;
+  if (!user) throw new Error("You must be signed in to add a phone number.");
+  const normalizedPhone = normalizePhoneNumber(phone);
+  if (!/^\+\d{10,15}$/.test(normalizedPhone)) {
+    throw new Error("Enter a valid mobile number with country code.");
+  }
+
+  await updateDoc(doc(getFirebaseDb(), "users", user.uid), {
+    phone: normalizedPhone,
+    phoneVerified: false,
+    updatedAt: serverTimestamp(),
+  });
+  return normalizedPhone;
 }
