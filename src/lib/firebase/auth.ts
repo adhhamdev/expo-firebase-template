@@ -1,32 +1,50 @@
-import {
+export {
   getAuth,
-  onAuthStateChanged as onAuthStateChangedRn,
-  signInWithEmailAndPassword as signInRn,
-  createUserWithEmailAndPassword as createUserRn,
-  signOut as signOutRn,
-  type FirebaseAuthTypes,
-} from "@react-native-firebase/auth";
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signInWithCredential,
+  signOut,
+  sendPasswordResetEmail,
+  updateProfile,
+  onAuthStateChanged,
+  linkWithCredential,
+  PhoneAuthProvider,
+  signInWithPhoneNumber,
+  getIdToken,
+  EmailAuthProvider,
+  GoogleAuthProvider,
+  AppleAuthProvider,
+  reauthenticateWithCredential,
+  updatePassword,
+  deleteUser,
+  getAdditionalUserInfo,
+} from "./auth.native";
 
-export type AuthUser = FirebaseAuthTypes.User;
+export type { AuthUser } from "./auth-types";
+
+import { getAuth as getAuthFn } from "./auth.native";
 
 export function getFirebaseAuth() {
-  return getAuth();
+  return getAuthFn();
 }
 
 export function onAuthStateChanged(
-  callback: (user: AuthUser | null) => void
+  callback: (user: import("./auth-types").AuthUser | null) => void,
 ): () => void {
-  return onAuthStateChangedRn(getAuth(), callback);
+  return require("./auth.native").onAuthStateChanged(getAuthFn(), callback);
 }
 
 export async function signInWithEmail(email: string, password: string) {
-  return signInRn(getAuth(), email.trim(), password);
+  const { signInWithEmailAndPassword } = require("./auth.native");
+  return signInWithEmailAndPassword(getAuthFn(), email.trim(), password);
 }
 
 export async function createUserWithEmail(email: string, password: string) {
-  return createUserRn(getAuth(), email.trim(), password);
+  const { createUserWithEmailAndPassword } = require("./auth.native");
+  return createUserWithEmailAndPassword(getAuthFn(), email.trim(), password);
 }
 
 export async function signOut() {
-  return signOutRn(getAuth());
+  const { signOut: signOutFn } = require("./auth.native");
+  return signOutFn(getAuthFn());
 }

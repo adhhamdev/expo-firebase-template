@@ -2,23 +2,35 @@
  * Domain helpers for auth-related Firestore profile work.
  * Keep screens thin; put business rules here.
  */
-import { db, doc, getDoc, setDoc } from "@/lib/firebase/db";
+import {
+  doc,
+  getDoc,
+  getFirebaseDb,
+  serverTimestamp,
+  setDoc,
+} from "@/lib/firebase/db";
 import type { UserProfile } from "@/types";
 
 export async function ensureUserProfile(
   uid: string,
-  email: string
+  email: string,
 ): Promise<UserProfile> {
-  const ref = doc(db(), "users", uid);
+  const ref = doc(getFirebaseDb(), "users", uid);
   const snap = await getDoc(ref);
   if (snap.exists()) {
-    return snap.data() as UserProfile;
+    return { uid, ...snap.data() } as UserProfile;
   }
-  const profile: UserProfile = {
+  const profile = {
     uid,
-    email,
-    createdAt: new Date().toISOString(),
+    email: email.trim().toLowerCase(),
+    fcmToken: null as string | null,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
   };
   await setDoc(ref, profile);
-  return profile;
+  return {
+    uid,
+    email: profile.email,
+    createdAt: new Date().toISOString(),
+  };
 }

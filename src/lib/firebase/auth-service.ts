@@ -2,10 +2,14 @@
  * Shared Firebase Auth + profile helpers used by providers and push registration.
  * Feature-specific auth flows live under src/features/auth/.
  */
-import { getIdToken } from "@react-native-firebase/auth";
-
+import { getIdToken } from "@/lib/firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebase/config";
-import { doc, getFirebaseDb, updateDoc, serverTimestamp } from "@/lib/firebase/db";
+import {
+  doc,
+  getFirebaseDb,
+  serverTimestamp,
+  updateDoc,
+} from "@/lib/firebase/db";
 
 /**
  * Persist the device push token on the user document.
