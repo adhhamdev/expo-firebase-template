@@ -1,0 +1,65 @@
+name: Sync template source from gemfort patterns
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Clone gemfort and copy reusable layers
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/orbitratechnology/gemfort.git /tmp/gemfort
+
+          cp /tmp/gemfort/babel.config.js .
+          cp /tmp/gemfort/metro.config.js .
+          cp /tmp/gemfort/tsconfig.json .
+          cp /tmp/gemfort/eslint.config.js .
+          cp /tmp/gemfort/jest.config.js .
+          cp /tmp/gemfort/.fingerprintignore . 2>/dev/null || true
+          cp /tmp/gemfort/.gitattributes . 2>/dev/null || true
+
+          mkdir -p src/components/ui src/providers src/hooks src/lib/firebase src/lib/notifications src/constants
+
+          for f in button.tsx input.tsx screen.tsx card.tsx elevated-card.tsx empty-state.tsx \
+            loading-overlay.tsx confirm-dialog.tsx form-section.tsx form-footer.tsx \
+            skeleton-list.tsx stack-header.tsx collapsible.tsx chip-select.tsx; do
+            cp "/tmp/gemfort/src/components/ui/$f" "src/components/ui/$f"
+          done
+
+          for f in query-provider.tsx theme-provider.tsx loading-provider.tsx confirm-provider.tsx toast-provider.tsx; do
+            cp "/tmp/gemfort/src/providers/$f" "src/providers/$f"
+          done
+
+          for f in use-app-theme.ts use-color-scheme.ts use-theme.ts use-theme-styles.ts use-reduce-motion.ts use-debounced-value.ts; do
+            [ -f "/tmp/gemfort/src/hooks/$f" ] && cp "/tmp/gemfort/src/hooks/$f" "src/hooks/$f"
+          done
+
+          for f in haptics.ts theme-preference.ts errors.ts utils.ts alert.ts; do
+            [ -f "/tmp/gemfort/src/lib/$f" ] && cp "/tmp/gemfort/src/lib/$f" "src/lib/$f"
+          done
+          sed -i 's/gemfort_theme_preference/app_theme_preference/g' src/lib/theme-preference.ts || true
+          sed -i 's/GemFort/App/g' src/lib/haptics.ts || true
+
+          for f in init.ts init.native.ts config.ts config.native.ts firebase-config.ts \
+            auth.native.ts auth-types.ts auth-types.native.ts db.ts db.native.ts \
+            call-function.ts storage-service.ts messaging.ts; do
+            [ -f "/tmp/gemfort/src/lib/firebase/$f" ] && cp "/tmp/gemfort/src/lib/firebase/$f" "src/lib/firebase/$f"
+          done
+
+          cp /tmp/gemfort/src/constants/design-tokens.ts src/constants/design-tokens.ts
+          [ -f /tmp/gemfort/src/constants/theme.ts ] && cp /tmp/gemfort/src/constants/theme.ts src/constants/theme.ts
+          [ -f /tmp/gemfort/src/lib/notifications/register-push-token.ts ] && cp /tmp/gemfort/src/lib/notifications/register-push-token.ts src/lib/notifications/
+
+          find src/components/ui src/providers src/hooks src/lib -type f | wc -l
+
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --staged --quiet; then echo "No changes"; exit 0; fi
+          git commit -m "chore: sync providers, UI, firebase libs, hooks from gemfort"
+          git push
