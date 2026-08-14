@@ -27,6 +27,7 @@ A clean, scalable, AI/agent-friendly template extracted from real production pat
 - **AI / Agent friendly** — Full Expo agent skills tree (from production GemFort), `AGENTS.md`, Cursor / Claude / VS Code settings, plus agent-device support.
 - **Placeholders only** — every project-specific value (bundle IDs, Firebase keys, EAS project ID, app name) is a clear placeholder.
 - **Bun-first** — lockfile and scripts assume Bun; npm/yarn still work.
+- **Sync from production** — reusable UI, Firebase client, and agent skills can be re-pulled from [GemFort](https://github.com/orbitratechnology/gemfort) via Actions or local scripts.
 
 ---
 
@@ -77,8 +78,14 @@ EXPO_PUBLIC_FIREBASE_APP_ID=1:123456789:web:abcdef
 ### 4. Native Google Services
 
 1. Create Android + iOS apps in Firebase Console with your bundle IDs (see `app.config.ts`).
-2. Download `google-services.json` and `GoogleService-Info.plist`.
-3. Place them under `google-services/` (see folder README).
+2. Prefer automation (see [GOOGLE_SERVICES_EAS.md](./GOOGLE_SERVICES_EAS.md)):
+
+```bash
+bun run firebase:sync          # download into google-services/
+bun run firebase:sync:eas      # also upload sensitive EAS file vars
+```
+
+3. Or place files manually under `google-services/` (folder README).
 
 ### 5. Project identity (search & replace)
 
@@ -86,7 +93,7 @@ EXPO_PUBLIC_FIREBASE_APP_ID=1:123456789:web:abcdef
 |-------------|--------------|
 | `YOUR_APP_NAME` | Display name |
 | `your-app` / `yourapp` | slug / scheme |
-| `app.yourapp.dev` etc. | Bundle IDs |
+| `app.yourapp.dev` etc. | Bundle IDs (also update `scripts/sync-firebase-native-configs.mjs`) |
 | `YOUR_EAS_PROJECT_ID` | EAS project ID (`eas init`) |
 | `your-org` | Expo / GitHub org |
 | `asia-south1` | Your Firebase region |
@@ -115,7 +122,7 @@ src/
 │   ├── (tabs)/          # Main tab navigator
 │   └── _layout.tsx      # Root providers + splash
 ├── components/
-│   └── ui/              # Base Button, Input, Screen, Card, …
+│   └── ui/              # Button, Input, Screen, sheets, form fields, …
 ├── features/
 │   └── auth/            # Domain services (extend with more features)
 ├── constants/           # Design tokens, theme
@@ -128,8 +135,10 @@ src/
 ├── navigation/
 └── types/
 functions/               # Cloud Functions (incl. linkVerifiedPhone for PNV)
-google-services/         # Per-env native Firebase config
+google-services/         # Per-env native Firebase config (gitignored)
 AUTH_SETUP.md            # Google · Apple · SMS · PNV console + client guide
+GOOGLE_SERVICES_EAS.md   # Native config download + EAS file vars
+scripts/                 # firebase:sync, sync from gemfort
 assets/
 .agents/skills/          # Full Expo agent skills (vendored from GemFort)
 .claude/skills/          # Claude-facing skill copies
@@ -183,6 +192,27 @@ Configure in `app.config.ts` and `eas.json`.
 | `bun run update:dev` / `update:preview` | EAS Update |
 | `bun run lint` / `typecheck` / `test` | Quality |
 | `bun run firebase:deploy` | Rules + indexes + storage + functions |
+| `bun run firebase:sync` | Download native Google Services files |
+| `bun run firebase:sync:eas` | Sync local + upload EAS sensitive file vars |
+| `bun run sync:src` | Pull reusable UI / providers / Firebase libs from GemFort |
+| `bun run sync:skills` | Pull agent skills + IDE configs from GemFort |
+
+---
+
+## Syncing from GemFort
+
+Reusable layers stay aligned with production [GemFort](https://github.com/orbitratechnology/gemfort) without copying domain features (GemNet, GemTrack, gem-specific rules, etc.).
+
+| What | GitHub Action | Local |
+|------|---------------|--------|
+| UI, providers, hooks, Firebase client | **Sync template source from gemfort patterns** | `bun run sync:src` |
+| Agent skills + Cursor / Claude / VS Code | **Sync skills from gemfort** | `bun run sync:skills` |
+
+Both Actions are `workflow_dispatch` only. If the source repo is private, add a repository secret **`GEMFORT_TOKEN`** (PAT with `contents:read` on GemFort). Public clone is used when the secret is absent.
+
+**Intentionally not synced:** marketplace/workspace features, domain Cloud Functions, product assets, full Firestore rules/indexes, app identity.
+
+After a source sync, review the diff, run `bun run typecheck`, and commit what you want to keep.
 
 ---
 
@@ -241,7 +271,7 @@ Put Firebase / API secrets in EAS, not in git:
 eas secret:create --name EXPO_PUBLIC_FIREBASE_API_KEY --value "..." --scope project
 ```
 
-Or use EAS environment variables in the dashboard for each profile.
+Native Google Services are best managed as **sensitive file** env vars per environment via `bun run firebase:sync:eas` (see [GOOGLE_SERVICES_EAS.md](./GOOGLE_SERVICES_EAS.md)).
 
 Docs: https://docs.expo.dev/build/introduction/ · https://docs.expo.dev/eas-update/introduction/
 
@@ -276,10 +306,16 @@ Or:
 firebase use your-project-id
 ```
 
+### Native configs
+
+```bash
+bun run firebase:sync
+bun run firebase:sync:eas
+```
+
 ### Deploy rules, indexes, storage, functions
 
 ```bash
-# From repo root (script already set)
 bun run firebase:deploy
 
 # Or selectively
@@ -427,7 +463,8 @@ Re-sync from GemFort anytime:
 ```bash
 # GitHub Actions: Actions → "Sync skills from gemfort" → Run workflow
 # or locally:
-bash scripts/sync-skills-from-gemfort.sh
+bun run sync:skills
+# Private source: GEMFORT_TOKEN=… bun run sync:skills
 ```
 
 Optional extras:
@@ -447,6 +484,7 @@ Always use **versioned** Expo docs: https://docs.expo.dev/versions/v57.0.0/
 - **Rules**: start from `firestore.rules` and `storage.rules` (locked down; expand per feature).
 - **Functions**: `functions/` — includes `linkVerifiedPhone` for PNV JWT verification.
 - **Deploy**: `bun run firebase:deploy` (requires Firebase CLI + project).
+- **Native configs**: `bun run firebase:sync` / `firebase:sync:eas` — see [GOOGLE_SERVICES_EAS.md](./GOOGLE_SERVICES_EAS.md).
 
 ---
 
