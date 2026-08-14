@@ -11,6 +11,8 @@ Use this as the foundation for any mobile app that needs Auth, Firestore, Storag
 | Package manager | **Bun** (preferred) · npm / yarn |
 | Backend | Firebase Auth · Firestore · Storage · Cloud Functions |
 | Auth | Email · Google · Apple · SMS OTP · PNV (Android) |
+| Security | **App Check** (debug + Play Integrity / App Attest) |
+| Play | **adi-registration.properties** via config plugin |
 | App identity | **One** package / bundle ID for all builds |
 
 > **Requires a development build.** React Native Firebase does **not** work in Expo Go.
@@ -26,7 +28,6 @@ Use this as the foundation for any mobile app that needs Auth, Firestore, Storag
 - Accounts: [Expo](https://expo.dev), [Firebase](https://console.firebase.google.com)
 
 ```bash
-# CLIs (once per machine)
 curl -fsSL https://bun.sh/install | bash
 npm install -g eas-cli firebase-tools
 eas login
@@ -34,8 +35,6 @@ firebase login
 ```
 
 ### 1. Create your repo from this template
-
-GitHub → **Use this template** → new repository, then:
 
 ```bash
 git clone https://github.com/<you>/<your-repo>.git
@@ -45,7 +44,7 @@ bun install
 
 ### 2. Name your app (single package)
 
-Edit **`app.config.ts`** at the top:
+Edit **`app.config.ts`**:
 
 | Constant | Example |
 |----------|---------|
@@ -56,78 +55,51 @@ Edit **`app.config.ts`** at the top:
 | `EAS_PROJECT_ID` | from step 4 |
 | `EXPO_OWNER` | your Expo username or org |
 
-Also set `PACKAGE_NAME` in **`scripts/sync-firebase-native-configs.mjs`** to the same value.
-
-There are **no** separate `.dev` / `.preview` apps — development, preview, and store builds share this one ID.
+Use the **same** `PACKAGE_NAME` in `scripts/sync-firebase-native-configs.mjs`.
 
 ### 3. Firebase project
 
-1. [Firebase Console](https://console.firebase.google.com) → create a project.
-2. Add **one Android app** and **one iOS app** with package/bundle = your `PACKAGE_NAME`.
-3. Project settings → **Web** app → copy config into `.env`:
+1. Create a Firebase project.
+2. Add **one Android** + **one iOS** app with package/bundle = `PACKAGE_NAME`.
+3. Copy web config into `.env`:
 
 ```bash
 cp .env.example .env
 ```
 
-```bash
-EXPO_PUBLIC_FIREBASE_API_KEY=
-EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=
-EXPO_PUBLIC_FIREBASE_PROJECT_ID=
-EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=
-EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
-EXPO_PUBLIC_FIREBASE_APP_ID=
-```
-
-4. Point the CLI at the project:
-
-```bash
-# .firebaserc → "default": "your-project-id"
-firebase use your-project-id
-```
-
-5. Pull native config files:
+4. `firebase use your-project-id` (or edit `.firebaserc`).
+5. Native configs:
 
 ```bash
 bun run firebase:sync
-# optional: attach the same files to EAS builds
-bun run firebase:sync:eas
+bun run firebase:sync:eas   # optional
 ```
 
-Files land in `google-services/` (gitignored). Details: [GOOGLE_SERVICES_EAS.md](./GOOGLE_SERVICES_EAS.md).
-
-6. Enable Auth providers you need (Email, Google, Apple, Phone). Full guide: [AUTH_SETUP.md](./AUTH_SETUP.md).
+6. Auth providers: [AUTH_SETUP.md](./AUTH_SETUP.md).
+7. **App Check** (recommended before enforcement): [APP_CHECK.md](./APP_CHECK.md).
 
 ### 4. EAS project
 
 ```bash
 eas init
-# paste project ID into app.config.ts → EAS_PROJECT_ID
+# paste ID into app.config.ts → EAS_PROJECT_ID
 ```
 
-Profiles in `eas.json` (same package for all):
-
-| Profile | Use |
-|---------|-----|
-| `development` | Dev client (required for RN Firebase) |
-| `preview` | Internal test builds |
-| `production` | Store / release |
+Set `EXPO_PUBLIC_FIREBASE_APP_CHECK_DEBUG_TOKEN` in `eas.json` development/preview (or EAS env) after generating a debug token. Leave it off production.
 
 ### 5. First run
 
 ```bash
-# Local native (after google-services files exist)
-bun run android
+bun run android   # or ios
 # or
-bun run ios
-
-# Or cloud dev client
-bun run build:dev:android
-bun run build:dev:ios
-bun run start:dev-client
+bun run build:dev:android && bun run start:dev-client
 ```
 
-### 6. Ship rules & functions (when ready)
+### 6. Play package verification (when Console asks)
+
+Paste the Play token into `assets/adi-registration.properties`, then rebuild Android. See [APP_CHECK.md](./APP_CHECK.md).
+
+### 7. Deploy backend when ready
 
 ```bash
 bun run firebase:deploy
@@ -155,58 +127,44 @@ bun run firebase:deploy
 
 ```text
 src/
-├── app/              # Expo Router screens
-│   ├── (auth)/       # Login / register
-│   ├── (tabs)/       # Main tabs
-│   └── _layout.tsx   # Providers + splash
-├── components/ui/    # Shared UI
-├── features/         # Domain logic (start with auth/)
-├── lib/firebase/     # Auth, Firestore, Storage, callables
+├── app/                 # Expo Router
+├── components/ui/
+├── features/
+├── lib/firebase/        # Auth, App Check, Firestore, Storage, callables
 ├── providers/
-└── …
-functions/            # Cloud Functions (incl. PNV link)
-google-services/      # Native Firebase config (local only)
+functions/
+google-services/         # Native Firebase config (gitignored)
+assets/adi-registration.properties
 AUTH_SETUP.md
+APP_CHECK.md
 GOOGLE_SERVICES_EAS.md
 ```
 
 Path aliases: `@/*` → `./src/*`.
 
-**Add a feature:** put services under `src/features/<name>/`, screens under `src/app/`, reuse `components/ui` and providers, extend rules as needed.
+---
+
+## Auth · App Check · Play ADI
+
+| Topic | Doc |
+|-------|-----|
+| Google · Apple · SMS · PNV | [AUTH_SETUP.md](./AUTH_SETUP.md) |
+| App Check debug + production providers | [APP_CHECK.md](./APP_CHECK.md) |
+| Play `adi-registration.properties` | [APP_CHECK.md](./APP_CHECK.md) |
+| Native Google Services / EAS files | [GOOGLE_SERVICES_EAS.md](./GOOGLE_SERVICES_EAS.md) |
+
+App Check activates automatically on native boot (`activateAppCheck` inside `warmUpFirestore`). Production uses Play Integrity / App Attest; development uses the debug provider when a debug token is present.
 
 ---
 
-## Auth (short)
-
-| Module | Path |
-|--------|------|
-| Google / Apple | `src/lib/firebase/social-auth` |
-| SMS | `src/lib/firebase/phone-auth` |
-| PNV | `src/lib/firebase/phone-pnv` |
-| Server link | `functions/src/auth/link-verified-phone.ts` |
-
-Phone UX: try **PNV** on Android, fall back to **SMS**. iOS uses SMS. Rebuild after enabling native providers. See [AUTH_SETUP.md](./AUTH_SETUP.md).
-
----
-
-## Optional: sync reusable code from GemFort
-
-Production patterns live in [GemFort](https://github.com/orbitratechnology/gemfort). Pull UI / Firebase client / agent skills without domain product code:
+## Optional: sync from GemFort
 
 ```bash
-bun run sync:src      # UI, providers, hooks, firebase libs
-bun run sync:skills   # agent skills + IDE configs
+bun run sync:src
+bun run sync:skills
 ```
 
-Or run the matching **workflow_dispatch** Actions. Private source: set secret / env `GEMFORT_TOKEN`.
-
----
-
-## Agent / AI (optional)
-
-In-repo Expo skills, `AGENTS.md`, Cursor / Claude / VS Code settings. Prefer versioned docs: https://docs.expo.dev/versions/v57.0.0/
-
-Device QA: [agent-device](https://github.com/callstack/agent-device) — `npx skills add callstackincubator/agent-device`.
+Or GitHub Actions (`workflow_dispatch`). Private source: `GEMFORT_TOKEN`.
 
 ---
 

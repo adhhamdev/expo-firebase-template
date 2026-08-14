@@ -10,6 +10,9 @@
       "channel": "development",
       "ios": {
         "simulator": true
+      },
+      "env": {
+        "EXPO_PUBLIC_FIREBASE_APP_CHECK_DEBUG_TOKEN": "YOUR_APP_CHECK_DEBUG_TOKEN"
       }
     },
     "preview": {
@@ -17,6 +20,9 @@
       "channel": "preview",
       "ios": {
         "simulator": true
+      },
+      "env": {
+        "EXPO_PUBLIC_FIREBASE_APP_CHECK_DEBUG_TOKEN": "YOUR_APP_CHECK_DEBUG_TOKEN"
       }
     },
     "production": {

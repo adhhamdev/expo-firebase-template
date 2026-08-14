@@ -66,7 +66,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     "react-native-nitro-google-signin",
     "@react-native-firebase/app",
     "@react-native-firebase/auth",
+    "@react-native-firebase/app-check",
     "@react-native-vector-icons/material-icons",
+    // Play package ownership verification — paste token into assets/adi-registration.properties
+    "expo-adi-registration",
     [
       "expo-build-properties",
       {
@@ -75,6 +78,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
           forceStaticLinking: [
             "RNFBApp",
             "RNFBAuth",
+            "RNFBAppCheck",
             "RNFBFirestore",
             "RNFBStorage",
           ],
