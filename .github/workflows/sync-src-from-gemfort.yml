@@ -11,14 +11,14 @@ jobs:
       - name: Clone gemfort and copy reusable layers
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMFORT_TOKEN: ${{ secrets.GEMFORT_TOKEN }}
         run: |
           set -euo pipefail
-          # Prefer authenticated clone when GEMFORT_TOKEN is set (private source).
-          if [ -n "${{ secrets.GEMFORT_TOKEN }}" ]; then
-            git clone --depth 1 https://x-access-token:${{ secrets.GEMFORT_TOKEN }}@github.com/orbitratechnology/gemfort.git /tmp/gemfort
+          if [ -n "${GEMFORT_TOKEN:-}" ]; then
+            git clone --depth 1 "https://x-access-token:${GEMFORT_TOKEN}@github.com/orbitratechnology/gemfort.git" /tmp/gemfort
           else
             git clone --depth 1 https://github.com/orbitratechnology/gemfort.git /tmp/gemfort || {
-              echo "gemfort not reachable; skipping sync"
+              echo "gemfort not reachable; set GEMFORT_TOKEN secret if the repo is private"
               exit 0
             }
           fi
@@ -35,19 +35,22 @@ jobs:
 
           for f in button.tsx input.tsx screen.tsx card.tsx elevated-card.tsx empty-state.tsx \
             loading-overlay.tsx confirm-dialog.tsx form-section.tsx form-footer.tsx \
-            skeleton-list.tsx stack-header.tsx collapsible.tsx chip-select.tsx icon.tsx; do
+            skeleton-list.tsx stack-header.tsx collapsible.tsx chip-select.tsx icon.tsx \
+            bottom-sheet.tsx action-sheet.tsx masked-input.tsx phone-number-field.tsx \
+            media-field.tsx media-album-field.tsx city-field.tsx country-field.tsx \
+            country-flag.tsx country-picker-sheet.tsx city-picker-sheet.tsx \
+            currency-amount-field.tsx currency-picker-sheet.tsx; do
             [ -f "/tmp/gemfort/src/components/ui/$f" ] && cp "/tmp/gemfort/src/components/ui/$f" "src/components/ui/$f"
           done
-          # Template uses Material-only icons — strip FA aliases if present
           if [ -f src/components/ui/icon.tsx ]; then
             sed -i 's/GemFort/App/g' src/components/ui/icon.tsx || true
           fi
 
-          for f in query-provider.tsx theme-provider.tsx loading-provider.tsx confirm-provider.tsx toast-provider.tsx; do
-            cp "/tmp/gemfort/src/providers/$f" "src/providers/$f"
+          for f in query-provider.tsx theme-provider.tsx loading-provider.tsx confirm-provider.tsx toast-provider.tsx biometric-lock-provider.tsx; do
+            [ -f "/tmp/gemfort/src/providers/$f" ] && cp "/tmp/gemfort/src/providers/$f" "src/providers/$f"
           done
 
-          for f in use-app-theme.ts use-color-scheme.ts use-theme.ts use-theme-styles.ts use-reduce-motion.ts use-debounced-value.ts; do
+          for f in use-app-theme.ts use-color-scheme.ts use-theme.ts use-theme-styles.ts use-reduce-motion.ts use-debounced-value.ts use-firestore-live-query.ts; do
             [ -f "/tmp/gemfort/src/hooks/$f" ] && cp "/tmp/gemfort/src/hooks/$f" "src/hooks/$f"
           done
 
@@ -59,13 +62,14 @@ jobs:
 
           for f in init.ts init.native.ts config.ts config.native.ts firebase-config.ts \
             auth.native.ts auth-types.ts auth-types.native.ts db.ts db.native.ts \
-            call-function.ts storage-service.ts messaging.ts functions-region.ts; do
+            call-function.ts storage-service.ts messaging.ts functions-region.ts local-write.ts; do
             [ -f "/tmp/gemfort/src/lib/firebase/$f" ] && cp "/tmp/gemfort/src/lib/firebase/$f" "src/lib/firebase/$f"
           done
 
           cp /tmp/gemfort/src/constants/design-tokens.ts src/constants/design-tokens.ts
           [ -f /tmp/gemfort/src/constants/theme.ts ] && cp /tmp/gemfort/src/constants/theme.ts src/constants/theme.ts
           [ -f /tmp/gemfort/src/lib/notifications/register-push-token.ts ] && cp /tmp/gemfort/src/lib/notifications/register-push-token.ts src/lib/notifications/
+          [ -f /tmp/gemfort/src/lib/notifications/categories.ts ] && cp /tmp/gemfort/src/lib/notifications/categories.ts src/lib/notifications/
 
           find src/components/ui src/providers src/hooks src/lib -type f | wc -l
 

@@ -16,9 +16,18 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Clone gemfort and copy agent files
+        env:
+          GEMFORT_TOKEN: ${{ secrets.GEMFORT_TOKEN }}
         run: |
           set -euo pipefail
-          git clone --depth 1 https://github.com/orbitratechnology/gemfort.git /tmp/gemfort
+          if [ -n "${GEMFORT_TOKEN:-}" ]; then
+            git clone --depth 1 "https://x-access-token:${GEMFORT_TOKEN}@github.com/orbitratechnology/gemfort.git" /tmp/gemfort
+          else
+            git clone --depth 1 https://github.com/orbitratechnology/gemfort.git /tmp/gemfort || {
+              echo "gemfort not reachable; set GEMFORT_TOKEN secret if the repo is private"
+              exit 0
+            }
+          fi
 
           rm -rf .agents/skills .claude/skills
           mkdir -p .agents .claude .cursor .vscode

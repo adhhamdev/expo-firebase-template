@@ -1,27 +1,35 @@
 # Google Services (native Firebase config)
 
-React Native Firebase reads these files at build time.
+React Native Firebase reads these files at build time. Files here are **gitignored**; keep local copies for `expo run:*` only.
 
-## Setup
+## Automated sync (preferred)
 
-1. Firebase Console → Project settings → Your apps.
-2. Add **Android** app with package `app.yourapp.dev` (and preview/prod variants).
-3. Add **iOS** app with matching bundle IDs.
-4. Download:
-   - `google-services.json` → place as:
-     - `google-services/google-services.json` (or per-env copies)
-   - `GoogleService-Info.plist` → place as:
-     - `google-services/GoogleService-Info.dev.plist`
-     - `google-services/GoogleService-Info.preview.plist`
-     - `google-services/GoogleService-Info.plist` (production)
-
-`app.config.ts` selects the file based on `EXPO_PUBLIC_APP_ENV`.
-
-For EAS, you can also set secrets:
+After Android/iOS apps exist in Firebase Console with bundle IDs matching `app.config.ts`:
 
 ```bash
-eas secret:create --name GOOGLE_SERVICES_JSON --type file --value ./path/to/google-services.json
-eas secret:create --name GOOGLE_SERVICES_PLIST --type file --value ./path/to/GoogleService-Info.plist
+# Download into google-services/
+bun run firebase:sync
+
+# Also upload GOOGLE_SERVICES_JSON / GOOGLE_SERVICES_PLIST to each EAS environment
+bun run firebase:sync:eas
 ```
 
-Do **not** commit production secrets if the repo is public; use EAS secrets instead.
+Details: [GOOGLE_SERVICES_EAS.md](../GOOGLE_SERVICES_EAS.md).
+
+Update package/bundle IDs in `scripts/sync-firebase-native-configs.mjs` if you changed placeholders in `app.config.ts`.
+
+## Manual setup
+
+1. Firebase Console → Project settings → Your apps.
+2. Add **Android** / **iOS** apps for `app.yourapp.dev`, `.preview`, and production.
+3. Download configs into this folder:
+
+| Environment   | Android                              | iOS                                         |
+|---------------|--------------------------------------|---------------------------------------------|
+| development   | `google-services.dev.json`           | `GoogleService-Info.dev.plist`              |
+| preview       | `google-services.preview.json`       | `GoogleService-Info.preview.plist`          |
+| production    | `google-services.json`               | `GoogleService-Info.plist`                  |
+
+`app.config.ts` selects the file from `EXPO_PUBLIC_APP_ENV`, or from EAS env vars `GOOGLE_SERVICES_JSON` / `GOOGLE_SERVICES_PLIST` when set.
+
+Do **not** commit production secrets if the repo is public; use EAS sensitive file variables instead.

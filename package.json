@@ -25,7 +25,8 @@
     "firebase:deploy": "firebase deploy --only firestore:rules,firestore:indexes,storage,functions",
     "firebase:sync": "node scripts/sync-firebase-native-configs.mjs",
     "firebase:sync:eas": "node scripts/sync-firebase-native-configs.mjs --upload-eas",
-    "reset-project": "node ./scripts/reset-project.js"
+    "sync:src": "bash scripts/sync-src-from-gemfort.sh",
+    "sync:skills": "bash scripts/sync-skills-from-gemfort.sh"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.1",

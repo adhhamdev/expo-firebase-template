@@ -4,6 +4,8 @@
 #
 # Local usage (from repo root):
 #   bash scripts/sync-skills-from-gemfort.sh
+# Optional private clone:
+#   GEMFORT_TOKEN=ghp_... bash scripts/sync-skills-from-gemfort.sh
 #
 set -euo pipefail
 
@@ -12,7 +14,11 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
 echo "Cloning orbitratechnology/gemfort (shallow)..."
-git clone --depth 1 https://github.com/orbitratechnology/gemfort.git "$TMP/gemfort"
+if [ -n "${GEMFORT_TOKEN:-}" ]; then
+  git clone --depth 1 "https://x-access-token:${GEMFORT_TOKEN}@github.com/orbitratechnology/gemfort.git" "$TMP/gemfort"
+else
+  git clone --depth 1 https://github.com/orbitratechnology/gemfort.git "$TMP/gemfort"
+fi
 
 SRC="$TMP/gemfort"
 
