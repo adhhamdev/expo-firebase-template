@@ -1,65 +1,43 @@
-import { SymbolView } from 'expo-symbols';
-import { PropsWithChildren, useState } from 'react';
-import { Pressable, StyleSheet } from 'react-native';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import { type ReactNode, useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import Animated, { FadeIn } from "react-native-reanimated";
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { Spacing, Typography } from "@/constants/design-tokens";
+import { useAppTheme } from "@/hooks/use-app-theme";
 
-export function Collapsible({ children, title }: PropsWithChildren & { title: string }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const theme = useTheme();
+type CollapsibleProps = {
+  title: string;
+  children: ReactNode;
+  defaultOpen?: boolean;
+};
+
+export function Collapsible({ title, children, defaultOpen = false }: CollapsibleProps) {
+  const { colors } = useAppTheme();
+  const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <ThemedView>
-      <Pressable
-        style={({ pressed }) => [styles.heading, pressed && styles.pressedHeading]}
-        onPress={() => setIsOpen((value) => !value)}>
-        <ThemedView type="backgroundElement" style={styles.button}>
-          <SymbolView
-            name={{ ios: 'chevron.right', android: 'chevron_right' }}
-            size={14}
-            weight="bold"
-            tintColor={theme.text}
-            style={{ transform: [{ rotate: isOpen ? '-90deg' : '90deg' }] }}
-          />
-        </ThemedView>
-
-        <ThemedText type="small">{title}</ThemedText>
+    <View style={styles.wrap}>
+      <Pressable onPress={() => setIsOpen((v) => !v)} style={styles.header}>
+        <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
+        <Text style={{ color: colors.textSecondary }}>{isOpen ? "−" : "+"}</Text>
       </Pressable>
       {isOpen && (
-        <Animated.View entering={FadeIn.duration(200)}>
-          <ThemedView type="backgroundElement" style={styles.content}>
-            {children}
-          </ThemedView>
+        <Animated.View entering={FadeIn.duration(200)} style={styles.content}>
+          {children}
         </Animated.View>
       )}
-    </ThemedView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  heading: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
+  wrap: { marginVertical: Spacing.sm },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: Spacing.sm,
   },
-  pressedHeading: {
-    opacity: 0.7,
-  },
-  button: {
-    width: Spacing.four,
-    height: Spacing.four,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  content: {
-    marginTop: Spacing.three,
-    borderRadius: Spacing.three,
-    marginLeft: Spacing.four,
-    padding: Spacing.four,
-  },
+  title: { ...Typography.body, fontWeight: "600" },
+  content: { paddingBottom: Spacing.sm },
 });
