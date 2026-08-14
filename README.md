@@ -1,11 +1,25 @@
-# Expo Firebase Template
+<p align="center">
+  <a href="https://expo.dev">
+    <img src="docs/assets/expo.svg" alt="Expo" width="72" height="72" />
+  </a>
+  &nbsp;&nbsp;&nbsp;
+  <a href="https://firebase.google.com">
+    <img src="docs/assets/firebase.svg" alt="Firebase" width="72" height="72" />
+  </a>
+</p>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
-[![Expo SDK](https://img.shields.io/badge/Expo-SDK%2057-black.svg)](https://docs.expo.dev/versions/v57.0.0/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6.svg)](./tsconfig.json)
-[![Template](https://img.shields.io/badge/GitHub-Template-success.svg)](https://github.com/adhhamdev/expo-firebase-template/generate)
+<h1 align="center">Expo Firebase Template</h1>
 
-**Production-ready Expo + React Native + Firebase starter** for shipping real apps — not demos.
+<p align="center">
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a>
+  <a href="https://docs.expo.dev/versions/v57.0.0/"><img src="https://img.shields.io/badge/Expo-SDK%2057-black.svg" alt="Expo SDK" /></a>
+  <a href="./tsconfig.json"><img src="https://img.shields.io/badge/TypeScript-strict-3178C6.svg" alt="TypeScript" /></a>
+  <a href="https://github.com/adhhamdev/expo-firebase-template/generate"><img src="https://img.shields.io/badge/GitHub-Template-success.svg" alt="Template" /></a>
+</p>
+
+<p align="center">
+  <strong>Production-ready Expo + React Native + Firebase starter</strong> for shipping real apps — not demos.
+</p>
 
 Auth (email, Google, Apple, SMS OTP, Android PNV), Firestore with offline persistence, Storage, Cloud Functions, App Check, push notifications, EAS Build & Update, React Compiler, and agent-friendly skills/docs.
 
@@ -121,6 +135,7 @@ src/providers/
 functions/
 google-services/         # Local native configs (gitignored)
 docs/
+docs/assets/             # README brand marks (Expo, Firebase)
 scripts/
 .agents/skills/          # After: bun run skills:install
 ```
@@ -132,6 +147,8 @@ Path alias: `@/*` → `./src/*`.
 ## License
 
 [MIT](./LICENSE) © [Adhham](https://adhham.dev)
+
+Expo® and Firebase™ logos are trademarks of their respective owners and are used here only to identify the technologies this template integrates with.
 
 ---
 
