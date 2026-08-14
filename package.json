@@ -51,8 +51,9 @@
     "firebase:sync": "node scripts/sync-firebase-native-configs.mjs",
     "firebase:sync:eas": "node scripts/sync-firebase-native-configs.mjs --upload-eas",
     "signing:fingerprints": "node scripts/print-android-fingerprints.mjs",
-    "sync:src": "bash scripts/sync-src-from-gemfort.sh",
-    "sync:skills": "bash scripts/sync-skills-from-gemfort.sh"
+    "skills:install": "bash scripts/install-agent-skills.sh",
+    "sync:skills": "bash scripts/install-agent-skills.sh",
+    "sync:src": "bash scripts/sync-src-from-gemfort.sh"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.1",
