@@ -17,54 +17,32 @@ Auth (email, Google, Apple, SMS OTP, Android PNV), Firestore with offline persis
 
 ## Create from the terminal
 
-Uses [create-expo-app](https://docs.expo.dev/more/create-expo/) with this repo as a **GitHub template** (no extra npm package required).
-
 ```bash
-# npm
 npx create-expo-app@latest my-app --template https://github.com/adhhamdev/expo-firebase-template
-
-# bun
-bun create expo my-app --template https://github.com/adhhamdev/expo-firebase-template
-
-# pnpm / yarn
-pnpm create expo-app my-app --template https://github.com/adhhamdev/expo-firebase-template
-yarn create expo-app my-app --template https://github.com/adhhamdev/expo-firebase-template
-```
-
-Pin a branch or tag:
-
-```bash
-npx create-expo-app@latest my-app --template https://github.com/adhhamdev/expo-firebase-template/tree/main
-```
-
-Then:
-
-```bash
-cd my-app
-bun install   # or npm install
-cp .env.example .env
-# continue with Quick start below
-```
-
-### Other terminal options
-
-```bash
-# GitHub CLI (after enabling Template repository on the repo)
-gh repo create my-app --template adhhamdev/expo-firebase-template --public --clone
 cd my-app && bun install
-
-# degit (copy without git history)
-npx degit adhhamdev/expo-firebase-template my-app
-cd my-app && bun install && git init
-
-# plain clone (you keep the upstream remote until you change it)
-git clone https://github.com/adhhamdev/expo-firebase-template.git my-app
-cd my-app && rm -rf .git && git init && bun install
+bun run skills:install   # Expo + Firebase + Vercel RN + Callstack agent skills
 ```
 
-### GitHub UI
+Also: `bun create expo`, `pnpm` / `yarn create expo-app`, [Use this template](https://github.com/adhhamdev/expo-firebase-template/generate), or `gh repo create … --template adhhamdev/expo-firebase-template`.
 
-**[Use this template](https://github.com/adhhamdev/expo-firebase-template/generate)** → new repo → clone.
+---
+
+## Quick start
+
+```bash
+bun install
+bun run skills:install
+cp .env.example .env
+# 1) Set identity in app.config.ts (APP_NAME, PACKAGE_NAME, …)
+# 2) Same PACKAGE_NAME in scripts/sync-firebase-native-configs.mjs
+firebase use <your-project-id>
+bun run firebase:sync
+bun run signing:fingerprints   # add SHA-1 / SHA-256 in Firebase Console, then sync again
+eas init                       # paste project ID into app.config.ts
+bun run android                # or: ios · build:dev:android
+```
+
+Full checklist: **[docs/SETUP.md](./docs/SETUP.md)** · Agent skills: **[docs/AGENTS_SKILLS.md](./docs/AGENTS_SKILLS.md)**
 
 ---
 
@@ -77,26 +55,8 @@ cd my-app && rm -rf .git && git init && bun install
 | **Firebase done right** | Native RNFB, offline Firestore, App Check, locked-down rules |
 | **Delivery** | EAS Build, Update channels, secure Google Services via EAS file env |
 | **Low manual setup** | Scripts for native config sync and Android SHA fingerprints |
-| **Agent-ready** | `AGENTS.md`, vendored Expo skills, clear architecture |
+| **Agent-ready** | Official Expo, Firebase, Vercel RN, Callstack skills via `skills:install` |
 | **Secure defaults** | Strong `.gitignore` / `.easignore`, no secrets in git |
-
----
-
-## Quick start
-
-```bash
-bun install
-cp .env.example .env
-# 1) Set identity in app.config.ts (APP_NAME, PACKAGE_NAME, …)
-# 2) Same PACKAGE_NAME in scripts/sync-firebase-native-configs.mjs
-firebase use <your-project-id>
-bun run firebase:sync
-bun run signing:fingerprints   # add SHA-1 / SHA-256 in Firebase Console, then sync again
-eas init                       # paste project ID into app.config.ts
-bun run android                # or: ios · build:dev:android
-```
-
-Full checklist: **[docs/SETUP.md](./docs/SETUP.md)**
 
 ---
 
@@ -123,11 +83,12 @@ Full checklist: **[docs/SETUP.md](./docs/SETUP.md)**
 | [Setup from scratch](./docs/SETUP.md) | Clone → Firebase → EAS → first run |
 | [Signing & SHA fingerprints](./docs/SIGNING.md) | Debug, EAS, Play App Signing |
 | [Google Services](./docs/GOOGLE_SERVICES.md) | `firebase:sync` automation |
-| [Auth / OAuth / PNV](./docs/AUTH.md) | Providers and client flows |
+| [Auth / OAuth / PNV](./docs/AUTH.md) | Providers and lifecycle helpers |
 | [App Check & Play ADI](./docs/APP_CHECK.md) | Debug vs production providers |
 | [Notifications](./docs/NOTIFICATIONS.md) | Channels, categories, tokens |
 | [Security](./docs/SECURITY.md) | Secrets, rules, baseline |
-| [Agents](./AGENTS.md) | AI coding rules & skills |
+| [Agent skills & MCP](./docs/AGENTS_SKILLS.md) | Expo · Firebase · Vercel · Callstack |
+| [Agents](./AGENTS.md) | Rules for coding agents |
 | [Contributing](./CONTRIBUTING.md) | PRs and guidelines |
 
 ---
@@ -143,6 +104,7 @@ Full checklist: **[docs/SETUP.md](./docs/SETUP.md)**
 | `bun run firebase:sync` / `firebase:sync:eas` | Native Google Services |
 | `bun run firebase:deploy` | Rules, indexes, storage, functions |
 | `bun run signing:fingerprints` | Print Android SHA-1 / SHA-256 |
+| `bun run skills:install` | Install/refresh agent skills |
 | `bun run lint` / `typecheck` / `test` | Quality |
 
 ---
@@ -151,36 +113,25 @@ Full checklist: **[docs/SETUP.md](./docs/SETUP.md)**
 
 ```text
 src/app/                 # Expo Router screens
-src/features/            # Domain modules (start with auth)
+src/features/            # Domain modules (auth lifecycle, …)
 src/lib/firebase/        # Auth, App Check, Firestore, Storage, callables
-src/lib/notifications/   # Push registration & channels
-src/components/ui/       # Shared UI primitives
-src/providers/           # Auth, theme, toast, query, push, …
-functions/               # Cloud Functions (incl. PNV link)
+src/lib/notifications/
+src/components/ui/
+src/providers/
+functions/
 google-services/         # Local native configs (gitignored)
-docs/                    # Human-readable guides
-scripts/                 # Automation (sync, fingerprints)
-.agents/skills/          # Vendored Expo agent skills
+docs/
+scripts/
+.agents/skills/          # After: bun run skills:install
 ```
 
 Path alias: `@/*` → `./src/*`.
 
 ---
 
-## Requirements
-
-- [Bun](https://bun.sh) (or Node 20+)
-- Xcode and/or Android Studio
-- [Expo account](https://expo.dev) + EAS CLI
-- [Firebase](https://console.firebase.google.com) project + Firebase CLI
-
----
-
 ## License
 
 [MIT](./LICENSE) © [Adhham](https://adhham.dev)
-
-Free for personal and commercial use. Attribution appreciated but not required.
 
 ---
 
