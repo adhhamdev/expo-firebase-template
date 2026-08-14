@@ -86,14 +86,14 @@ async function finishSocialSignIn(
 
   if (!createProfile) {
     pendingSocialRegistration = { provider, credential, identity };
-    await signOut(auth);
+    await signOut();
     throw new SocialRegistrationRequiredError();
   }
 
   const email =
     identity.email?.trim().toLowerCase() || user.email?.trim().toLowerCase();
   if (!email) {
-    await signOut(auth);
+    await signOut();
     throw new Error("Your provider did not return an email address.");
   }
 
