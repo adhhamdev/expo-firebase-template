@@ -15,16 +15,56 @@ Auth (email, Google, Apple, SMS OTP, Android PNV), Firestore with offline persis
 
 ---
 
-## Use this template
+## Create from the terminal
 
-1. Click **[Use this template](https://github.com/adhhamdev/expo-firebase-template/generate)** → create a new repository.
-2. Clone your new repo and follow the quick start below.
+Uses [create-expo-app](https://docs.expo.dev/more/create-expo/) with this repo as a **GitHub template** (no extra npm package required).
 
 ```bash
-git clone https://github.com/<you>/<your-app>.git
-cd <your-app>
-bun install
+# npm
+npx create-expo-app@latest my-app --template https://github.com/adhhamdev/expo-firebase-template
+
+# bun
+bun create expo my-app --template https://github.com/adhhamdev/expo-firebase-template
+
+# pnpm / yarn
+pnpm create expo-app my-app --template https://github.com/adhhamdev/expo-firebase-template
+yarn create expo-app my-app --template https://github.com/adhhamdev/expo-firebase-template
 ```
+
+Pin a branch or tag:
+
+```bash
+npx create-expo-app@latest my-app --template https://github.com/adhhamdev/expo-firebase-template/tree/main
+```
+
+Then:
+
+```bash
+cd my-app
+bun install   # or npm install
+cp .env.example .env
+# continue with Quick start below
+```
+
+### Other terminal options
+
+```bash
+# GitHub CLI (after enabling Template repository on the repo)
+gh repo create my-app --template adhhamdev/expo-firebase-template --public --clone
+cd my-app && bun install
+
+# degit (copy without git history)
+npx degit adhhamdev/expo-firebase-template my-app
+cd my-app && bun install && git init
+
+# plain clone (you keep the upstream remote until you change it)
+git clone https://github.com/adhhamdev/expo-firebase-template.git my-app
+cd my-app && rm -rf .git && git init && bun install
+```
+
+### GitHub UI
+
+**[Use this template](https://github.com/adhhamdev/expo-firebase-template/generate)** → new repo → clone.
 
 ---
 
