@@ -1,61 +1,92 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
-
-# dependencies
+# Dependencies
 node_modules/
+.pnp
+.pnp.js
 
-# Expo
+# Expo / Metro
 .expo/
 dist/
 dist-web/
 web-build/
 expo-env.d.ts
+.metro-health-check*
 
-# Native
-.kotlin/
-*.orig.*
+# Generated native projects (CNG / prebuild) — regenerate with `npx expo prebuild`
+/android
+/ios
+
+# Native / signing secrets (never commit)
 *.jks
+*.keystore
 *.p8
 *.p12
 *.key
 *.mobileprovision
-
-# Metro
-.metro-health-check*
-
-# debug
-npm-debug.*
-yarn-debug.*
-yarn-error.*
-
-# macOS
-.DS_Store
 *.pem
+credentials.json
+credentials/
+keystores/
+certs/
+*.orig.*
+.kotlin/
 
-# local env files
+# Env (all local variants)
 .env
-.env*.local
+.env.*
+!.env.example
 
-# typescript
-*.tsbuildinfo
-
-example
-
-# generated native folders
-/ios
-/android
-
-*.plan.md
-
-/dogfood-output
-/docs
-/plan
-
-# Firebase native configuration is supplied to cloud builds through sensitive
-# EAS file environment variables. Keep only ignored local copies for native runs.
+# Firebase native configs (local + any path). Use EAS file env vars for cloud builds.
 google-services.json
 google-services*.json
 GoogleService-Info.plist
 GoogleService-Info*.plist
+google-services/*.json
+google-services/*.plist
+!google-services/README.md
 
-
+# Logs & debug
 *.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+bun-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+*.iml
+
+# TypeScript / test / coverage
+*.tsbuildinfo
+coverage/
+.nyc_output/
+
+# Package managers
+# Keep lockfiles committed; ignore only local tool caches
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Local scratch / agent outputs
+example
+*.plan.md
+/dogfood-output
+/docs-local
+/plan
+.turbo/
+
+# Firebase emulators / CLI local state
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+pui-debug.log
+
+# EAS local artifacts
+*.apk
+*.aab
+*.ipa
