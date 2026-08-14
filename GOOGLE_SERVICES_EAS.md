@@ -1,49 +1,39 @@
-# Firebase native config sync
+# Firebase native config (single app)
 
-Firebase should have one project with separate Android and iOS apps for each EAS environment:
+This template uses **one** Android package and **one** iOS bundle ID for every build profile:
 
-| EAS profile   | Package / bundle ID (placeholders) |
-|---------------|------------------------------------|
-| `development` | `app.yourapp.dev`                  |
-| `preview`     | `app.yourapp.preview`              |
-| `production`  | `app.yourapp`                      |
+```text
+app.yourapp
+```
 
-Native files are **gitignored**. `app.config.ts` uses EAS file environment variables when present and falls back to matching local files under `google-services/` for local native builds.
+Change that value in `app.config.ts` (`PACKAGE_NAME`) and in `scripts/sync-firebase-native-configs.mjs` if you rename it.
 
-## Refresh local files
+You only need **one Android app** and **one iOS app** in Firebase Console.
 
-Requires [Firebase CLI](https://firebase.google.com/docs/cli) logged in and `.firebaserc` pointing at your project.
+Native files are gitignored. Local path:
+
+```text
+google-services/google-services.json
+google-services/GoogleService-Info.plist
+```
+
+`app.config.ts` reads those files, or EAS sensitive file variables `GOOGLE_SERVICES_JSON` / `GOOGLE_SERVICES_PLIST` when set on the build.
+
+## Download configs
+
+1. Firebase CLI logged in, `.firebaserc` set to your project.
+2. Android + iOS apps already created with package/bundle `app.yourapp`.
 
 ```bash
 bun run firebase:sync
 ```
 
-One environment only:
+## Upload to EAS (optional)
 
-```bash
-node scripts/sync-firebase-native-configs.mjs preview
-```
-
-## Refresh EAS securely
-
-Requires authenticated Firebase CLI **and** EAS CLI:
+Same files are attached to development, preview, and production EAS environments:
 
 ```bash
 bun run firebase:sync:eas
 ```
 
-The script discovers app IDs via Firebase CLI, downloads current configs into `google-services/`, and uploads them to the matching EAS environment as sensitive file variables:
-
-- `GOOGLE_SERVICES_JSON`
-- `GOOGLE_SERVICES_PLIST`
-
-No service files need to be committed to git.
-
-After changing native config, create a **new EAS build**; an OTA update cannot change native Firebase configuration.
-
-## First-time setup checklist
-
-1. Create Android + iOS apps in Firebase Console for each bundle ID above (or your real IDs after search-replace).
-2. Update `packageName` / `bundleId` in `scripts/sync-firebase-native-configs.mjs` if you changed them in `app.config.ts`.
-3. Run `bun run firebase:sync` then optionally `bun run firebase:sync:eas`.
-4. Register SHA-1 / SHA-256 for Google Sign-In (see [AUTH_SETUP.md](./AUTH_SETUP.md)).
+After changing native config, create a **new build** (OTA cannot change Google Services files).

@@ -4,48 +4,22 @@ import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 
 /**
- * Download Firebase native configs (google-services.json / GoogleService-Info.plist)
- * for each EAS environment and optionally upload them as sensitive EAS file vars.
- *
- * Placeholders match app.config.ts — search-replace bundle IDs when you create a project.
+ * Download Firebase native configs for the single app (one Android + one iOS app).
+ * Must match PACKAGE_NAME in app.config.ts.
  *
  * Usage:
  *   node scripts/sync-firebase-native-configs.mjs
- *   node scripts/sync-firebase-native-configs.mjs preview
  *   node scripts/sync-firebase-native-configs.mjs --upload-eas
  */
 
 const root = resolve(import.meta.dirname, "..");
 const uploadToEas = process.argv.includes("--upload-eas");
-const requestedEnvironment = process.argv.find((arg) =>
-  ["development", "preview", "production"].includes(arg),
-);
 
-/** Bundle / package IDs must match app.config.ts and Firebase Console apps. */
-const environments = {
-  development: {
-    packageName: "app.yourapp.dev",
-    bundleId: "app.yourapp.dev",
-    androidFile: "google-services/google-services.dev.json",
-    iosFile: "google-services/GoogleService-Info.dev.plist",
-  },
-  preview: {
-    packageName: "app.yourapp.preview",
-    bundleId: "app.yourapp.preview",
-    androidFile: "google-services/google-services.preview.json",
-    iosFile: "google-services/GoogleService-Info.preview.plist",
-  },
-  production: {
-    packageName: "app.yourapp",
-    bundleId: "app.yourapp",
-    androidFile: "google-services/google-services.json",
-    iosFile: "google-services/GoogleService-Info.plist",
-  },
-};
+/** Keep in sync with app.config.ts → PACKAGE_NAME */
+const PACKAGE_NAME = "app.yourapp";
 
-const selected = requestedEnvironment
-  ? { [requestedEnvironment]: environments[requestedEnvironment] }
-  : environments;
+const androidOut = "google-services/google-services.json";
+const iosOut = "google-services/GoogleService-Info.plist";
 
 const npx = process.platform === "win32" ? "npx.cmd" : "npx";
 
@@ -75,7 +49,9 @@ function findApp(apps, key, value) {
   const app = apps.find((candidate) => candidate[key] === value);
   if (!app) {
     throw new Error(
-      `No Firebase app found for ${key}=${value}. Create matching Android/iOS apps in Firebase Console (or update package/bundle IDs in this script and app.config.ts).`,
+      `No Firebase app found for ${key}=${value}.\n` +
+        `Create one Android and one iOS app in Firebase Console with package/bundle ID "${PACKAGE_NAME}",\n` +
+        `or update PACKAGE_NAME in this script and app.config.ts.`,
     );
   }
   return app.appId;
@@ -88,54 +64,56 @@ const iosApps = firebaseJson(["apps:list", "IOS"]);
 const tempRoot = mkdtempSync(join(tmpdir(), "expo-firebase-template-"));
 
 try {
-  for (const [environment, config] of Object.entries(selected)) {
-    const androidPath = resolve(root, config.androidFile);
-    const iosPath = resolve(root, config.iosFile);
-    const androidTempPath = resolve(tempRoot, `${environment}-google-services.json`);
-    const iosTempPath = resolve(tempRoot, `${environment}-GoogleService-Info.plist`);
-    const androidAppId = findApp(androidApps, "packageName", config.packageName);
-    const iosAppId = findApp(iosApps, "bundleId", config.bundleId);
+  const androidPath = resolve(root, androidOut);
+  const iosPath = resolve(root, iosOut);
+  const androidTempPath = resolve(tempRoot, "google-services.json");
+  const iosTempPath = resolve(tempRoot, "GoogleService-Info.plist");
+  const androidAppId = findApp(androidApps, "packageName", PACKAGE_NAME);
+  const iosAppId = findApp(iosApps, "bundleId", PACKAGE_NAME);
 
-    console.log(`Syncing Firebase native config: ${environment}`);
-    run(
-      npx,
-      [
-        "--no-install",
-        "firebase-tools",
-        "apps:sdkconfig",
-        "ANDROID",
-        androidAppId,
-        "--out",
-        androidTempPath,
-      ],
-      { allowNonZero: true },
-    );
-    run(
-      npx,
-      [
-        "--no-install",
-        "firebase-tools",
-        "apps:sdkconfig",
-        "IOS",
-        iosAppId,
-        "--out",
-        iosTempPath,
-      ],
-      { allowNonZero: true },
-    );
+  console.log(`Syncing Firebase native config for ${PACKAGE_NAME}`);
+  run(
+    npx,
+    [
+      "--no-install",
+      "firebase-tools",
+      "apps:sdkconfig",
+      "ANDROID",
+      androidAppId,
+      "--out",
+      androidTempPath,
+    ],
+    { allowNonZero: true },
+  );
+  run(
+    npx,
+    [
+      "--no-install",
+      "firebase-tools",
+      "apps:sdkconfig",
+      "IOS",
+      iosAppId,
+      "--out",
+      iosTempPath,
+    ],
+    { allowNonZero: true },
+  );
 
-    if (!existsSync(androidTempPath) || !existsSync(iosTempPath)) {
-      throw new Error(`Firebase CLI did not write both files for ${environment}`);
-    }
-    copyFileSync(androidTempPath, androidPath);
-    copyFileSync(iosTempPath, iosPath);
+  if (!existsSync(androidTempPath) || !existsSync(iosTempPath)) {
+    throw new Error("Firebase CLI did not write both config files");
+  }
+  copyFileSync(androidTempPath, androidPath);
+  copyFileSync(iosTempPath, iosPath);
+  console.log(`Wrote ${androidOut}`);
+  console.log(`Wrote ${iosOut}`);
 
-    if (uploadToEas) {
+  if (uploadToEas) {
+    for (const environment of ["development", "preview", "production"]) {
       for (const [name, file] of [
         ["GOOGLE_SERVICES_JSON", androidPath],
         ["GOOGLE_SERVICES_PLIST", iosPath],
       ]) {
-        console.log(`Uploading ${name} to EAS ${environment} environment`);
+        console.log(`Uploading ${name} to EAS ${environment}`);
         run(npx, [
           "--yes",
           "eas-cli@latest",
@@ -163,6 +141,6 @@ try {
 
 console.log(
   uploadToEas
-    ? "Firebase native configs synced locally and uploaded to EAS as sensitive file variables."
-    : "Firebase native configs synced locally under google-services/. Pass --upload-eas to update EAS file variables.",
+    ? "Native configs synced locally and uploaded to EAS (all environments use the same files)."
+    : "Native configs synced under google-services/. Pass --upload-eas to push to EAS.",
 );

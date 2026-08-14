@@ -2,506 +2,214 @@
 
 **Production-ready Expo SDK 57 · React Native · Firebase starter**
 
-A clean, scalable, AI/agent-friendly template extracted from real production patterns (including Orbitra / GemFort agent configs). Use this as the foundation for any new mobile app that needs Auth, Firestore, Storage, Cloud Functions, EAS Build/Update, and a modern React Native stack.
+Use this as the foundation for any mobile app that needs Auth, Firestore, Storage, Cloud Functions, EAS Build/Update, and a modern React Native stack.
 
 | | |
 |---|---|
 | Platforms | iOS · Android |
-| Stack | Expo SDK 57 · React Native 0.86 · React 19 · TypeScript |
-| Package manager | **Bun** (preferred) · npm / yarn also fine |
+| Stack | Expo SDK 57 · React Native · React 19 · TypeScript |
+| Package manager | **Bun** (preferred) · npm / yarn |
 | Backend | Firebase Auth · Firestore · Storage · Cloud Functions |
-| Auth | Email · **Google** · **Apple** · **SMS OTP** · **PNV (instant)** |
-| Delivery | EAS Build · EAS Update |
-| Agents | Vendored Expo skills · Callstack agent-device · Cursor / Claude / VS Code configs |
+| Auth | Email · Google · Apple · SMS OTP · PNV (Android) |
+| App identity | **One** package / bundle ID for all builds |
 
 > **Requires a development build.** React Native Firebase does **not** work in Expo Go.
 
 ---
 
-## Why this template
+## Guided setup (do this once)
 
-- **No repetitive setup** — Firebase init, providers, EAS multi-env, rules, functions, TypeScript paths, and agent rules are already wired.
-- **Auth ready** — Google One Tap, Apple Sign-In, SMS OTP, and Firebase Phone Number Verification (PNV) client + callable are included. See [AUTH_SETUP.md](./AUTH_SETUP.md).
-- **Feature-based & scalable** — `src/features/<domain>/` keeps domain logic isolated; screens stay thin.
-- **High performance defaults** — React Compiler, FlashList-ready, offline Firestore persistence, React Query, Reanimated.
-- **AI / Agent friendly** — Full Expo agent skills tree (from production GemFort), `AGENTS.md`, Cursor / Claude / VS Code settings, plus agent-device support.
-- **Placeholders only** — every project-specific value (bundle IDs, Firebase keys, EAS project ID, app name) is a clear placeholder.
-- **Bun-first** — lockfile and scripts assume Bun; npm/yarn still work.
-- **Sync from production** — reusable UI, Firebase client, and agent skills can be re-pulled from [GemFort](https://github.com/orbitratechnology/gemfort) via Actions or local scripts.
+### 0. Prerequisites
 
----
-
-## Quick start
-
-### Prerequisites
-
-- [Bun](https://bun.sh) (preferred) or Node.js 20+
+- [Bun](https://bun.sh) or Node 20+
 - Android Studio and/or Xcode
-- [EAS CLI](https://docs.expo.dev/eas/) and [Firebase CLI](https://firebase.google.com/docs/cli) (guides below)
-- Optional: [agent-device](https://github.com/callstack/agent-device) for AI-driven device QA
-
-### 1. Use this template
+- Accounts: [Expo](https://expo.dev), [Firebase](https://console.firebase.google.com)
 
 ```bash
-# GitHub: click "Use this template" → Create a new repository
-# or clone and re-init:
-git clone https://github.com/adhhamdev/expo-firebase-template.git my-app
-cd my-app
-rm -rf .git && git init
+# CLIs (once per machine)
+curl -fsSL https://bun.sh/install | bash
+npm install -g eas-cli firebase-tools
+eas login
+firebase login
 ```
 
-### 2. Install (Bun)
+### 1. Create your repo from this template
+
+GitHub → **Use this template** → new repository, then:
 
 ```bash
+git clone https://github.com/<you>/<your-repo>.git
+cd <your-repo>
 bun install
-# alternatives: npm install / yarn
 ```
 
-### 3. Environment
+### 2. Name your app (single package)
+
+Edit **`app.config.ts`** at the top:
+
+| Constant | Example |
+|----------|---------|
+| `APP_NAME` | `"Acme"` |
+| `APP_SLUG` | `"acme"` |
+| `APP_SCHEME` | `"acme"` |
+| `PACKAGE_NAME` | `"com.acme.app"` |
+| `EAS_PROJECT_ID` | from step 4 |
+| `EXPO_OWNER` | your Expo username or org |
+
+Also set `PACKAGE_NAME` in **`scripts/sync-firebase-native-configs.mjs`** to the same value.
+
+There are **no** separate `.dev` / `.preview` apps — development, preview, and store builds share this one ID.
+
+### 3. Firebase project
+
+1. [Firebase Console](https://console.firebase.google.com) → create a project.
+2. Add **one Android app** and **one iOS app** with package/bundle = your `PACKAGE_NAME`.
+3. Project settings → **Web** app → copy config into `.env`:
 
 ```bash
 cp .env.example .env
 ```
 
-Fill in your Firebase web config (Project settings → Your apps → Web app):
-
 ```bash
-EXPO_PUBLIC_APP_ENV=development
-EXPO_PUBLIC_FIREBASE_API_KEY=your-api-key
-EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
-EXPO_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
-EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
-EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789
-EXPO_PUBLIC_FIREBASE_APP_ID=1:123456789:web:abcdef
+EXPO_PUBLIC_FIREBASE_API_KEY=
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+EXPO_PUBLIC_FIREBASE_APP_ID=
 ```
 
-### 4. Native Google Services
-
-1. Create Android + iOS apps in Firebase Console with your bundle IDs (see `app.config.ts`).
-2. Prefer automation (see [GOOGLE_SERVICES_EAS.md](./GOOGLE_SERVICES_EAS.md)):
+4. Point the CLI at the project:
 
 ```bash
-bun run firebase:sync          # download into google-services/
-bun run firebase:sync:eas      # also upload sensitive EAS file vars
+# .firebaserc → "default": "your-project-id"
+firebase use your-project-id
 ```
 
-3. Or place files manually under `google-services/` (folder README).
-
-### 5. Project identity (search & replace)
-
-| Placeholder | Replace with |
-|-------------|--------------|
-| `YOUR_APP_NAME` | Display name |
-| `your-app` / `yourapp` | slug / scheme |
-| `app.yourapp.dev` etc. | Bundle IDs (also update `scripts/sync-firebase-native-configs.mjs`) |
-| `YOUR_EAS_PROJECT_ID` | EAS project ID (`eas init`) |
-| `your-org` | Expo / GitHub org |
-| `asia-south1` | Your Firebase region |
-
-### 6. Run (development build required)
+5. Pull native config files:
 
 ```bash
-# Local native
+bun run firebase:sync
+# optional: attach the same files to EAS builds
+bun run firebase:sync:eas
+```
+
+Files land in `google-services/` (gitignored). Details: [GOOGLE_SERVICES_EAS.md](./GOOGLE_SERVICES_EAS.md).
+
+6. Enable Auth providers you need (Email, Google, Apple, Phone). Full guide: [AUTH_SETUP.md](./AUTH_SETUP.md).
+
+### 4. EAS project
+
+```bash
+eas init
+# paste project ID into app.config.ts → EAS_PROJECT_ID
+```
+
+Profiles in `eas.json` (same package for all):
+
+| Profile | Use |
+|---------|-----|
+| `development` | Dev client (required for RN Firebase) |
+| `preview` | Internal test builds |
+| `production` | Store / release |
+
+### 5. First run
+
+```bash
+# Local native (after google-services files exist)
 bun run android
 # or
 bun run ios
 
-# Or EAS dev client
+# Or cloud dev client
 bun run build:dev:android
+bun run build:dev:ios
 bun run start:dev-client
 ```
 
----
-
-## Architecture
-
-```text
-src/
-├── app/                 # Expo Router (file-based routes)
-│   ├── (auth)/          # Login, register, etc.
-│   ├── (tabs)/          # Main tab navigator
-│   └── _layout.tsx      # Root providers + splash
-├── components/
-│   └── ui/              # Button, Input, Screen, sheets, form fields, …
-├── features/
-│   └── auth/            # Domain services (extend with more features)
-├── constants/           # Design tokens, theme
-├── hooks/
-├── lib/
-│   ├── firebase/        # Init, auth, social, phone SMS/PNV, storage, callFunction
-│   ├── errors.ts
-│   └── validation/
-├── providers/           # Auth, Query, Theme, Toast, Loading, Confirm, Push
-├── navigation/
-└── types/
-functions/               # Cloud Functions (incl. linkVerifiedPhone for PNV)
-google-services/         # Per-env native Firebase config (gitignored)
-AUTH_SETUP.md            # Google · Apple · SMS · PNV console + client guide
-GOOGLE_SERVICES_EAS.md   # Native config download + EAS file vars
-scripts/                 # firebase:sync, sync from gemfort
-assets/
-.agents/skills/          # Full Expo agent skills (vendored from GemFort)
-.claude/skills/          # Claude-facing skill copies
-.cursor/ · .vscode/
-```
-
-Path aliases: `@/*` → `./src/*`, `@/assets/*` → `./assets/*`.
-
----
-
-## Tech stack
-
-| Area | Choice |
-|------|--------|
-| App | Expo SDK 57, RN 0.86, React 19, TypeScript strict |
-| Package manager | Bun (preferred) |
-| Navigation | Expo Router (typed routes) |
-| Data | TanStack React Query, Zod |
-| Backend | `@react-native-firebase/*` + `firebase` JS where needed |
-| Social auth | `react-native-nitro-google-signin`, `expo-apple-authentication` |
-| Phone | RNFB Phone Auth (SMS) + `@react-native-firebase/phone-number-verification` (PNV) |
-| UI / motion | Reanimated 4, Gesture Handler, Keyboard Controller |
-| Lists | `@shopify/flash-list` (add when you need lists) |
-| Toasts | `sonner-native` |
-| Delivery | EAS Build + Update |
-| Agent QA | Callstack agent-device |
-
----
-
-## Environments
-
-| Profile | `EXPO_PUBLIC_APP_ENV` | Bundle ID pattern |
-|---------|----------------------|-------------------|
-| development | `development` | `app.yourapp.dev` |
-| preview | `preview` | `app.yourapp.preview` |
-| production | `production` | `app.yourapp` |
-
-Configure in `app.config.ts` and `eas.json`.
-
----
-
-## Scripts
-
-| Command | Purpose |
-|---------|---------|
-| `bun start` | Metro |
-| `bun run start:dev-client` | Dev client Metro |
-| `bun run android` / `ios` | Native run |
-| `bun run build:dev:android` / `:ios` | EAS development builds |
-| `bun run build:preview:*` | Preview builds |
-| `bun run update:dev` / `update:preview` | EAS Update |
-| `bun run lint` / `typecheck` / `test` | Quality |
-| `bun run firebase:deploy` | Rules + indexes + storage + functions |
-| `bun run firebase:sync` | Download native Google Services files |
-| `bun run firebase:sync:eas` | Sync local + upload EAS sensitive file vars |
-| `bun run sync:src` | Pull reusable UI / providers / Firebase libs from GemFort |
-| `bun run sync:skills` | Pull agent skills + IDE configs from GemFort |
-
----
-
-## Syncing from GemFort
-
-Reusable layers stay aligned with production [GemFort](https://github.com/orbitratechnology/gemfort) without copying domain features (GemNet, GemTrack, gem-specific rules, etc.).
-
-| What | GitHub Action | Local |
-|------|---------------|--------|
-| UI, providers, hooks, Firebase client | **Sync template source from gemfort patterns** | `bun run sync:src` |
-| Agent skills + Cursor / Claude / VS Code | **Sync skills from gemfort** | `bun run sync:skills` |
-
-Both Actions are `workflow_dispatch` only. If the source repo is private, add a repository secret **`GEMFORT_TOKEN`** (PAT with `contents:read` on GemFort). Public clone is used when the secret is absent.
-
-**Intentionally not synced:** marketplace/workspace features, domain Cloud Functions, product assets, full Firestore rules/indexes, app identity.
-
-After a source sync, review the diff, run `bun run typecheck`, and commit what you want to keep.
-
----
-
-## EAS CLI guide
-
-[EAS](https://docs.expo.dev/eas/) builds native binaries and ships OTA updates.
-
-### Install & login
-
-```bash
-npm install -g eas-cli
-# or: bun add -g eas-cli
-eas login
-eas whoami
-```
-
-### Link this project
-
-```bash
-eas init
-# paste the project ID into app.config.ts → extra.eas.projectId
-# and updates.url → https://u.expo.dev/<project-id>
-```
-
-### Profiles (already in `eas.json`)
-
-- **development** — dev client, internal distribution
-- **preview** — internal / TestFlight-style previews
-- **production** — store builds
-
-### Common commands
-
-```bash
-# Development client (required for RN Firebase)
-bun run build:dev:android
-bun run build:dev:ios
-
-# Preview / production
-bun run build:preview:android
-bun run build:prod:ios
-
-# OTA updates (same runtimeVersion / appVersion policy)
-bun run update:dev
-bun run update:preview
-
-eas build:list
-eas update:list
-eas credentials   # manage signing
-```
-
-### Secrets
-
-Put Firebase / API secrets in EAS, not in git:
-
-```bash
-eas secret:create --name EXPO_PUBLIC_FIREBASE_API_KEY --value "..." --scope project
-```
-
-Native Google Services are best managed as **sensitive file** env vars per environment via `bun run firebase:sync:eas` (see [GOOGLE_SERVICES_EAS.md](./GOOGLE_SERVICES_EAS.md)).
-
-Docs: https://docs.expo.dev/build/introduction/ · https://docs.expo.dev/eas-update/introduction/
-
----
-
-## Firebase CLI guide
-
-### Install & login
-
-```bash
-npm install -g firebase-tools
-# or: bun add -g firebase-tools
-firebase login
-firebase projects:list
-```
-
-### Point at your project
-
-Edit `.firebaserc`:
-
-```json
-{
-  "projects": {
-    "default": "your-project-id"
-  }
-}
-```
-
-Or:
-
-```bash
-firebase use your-project-id
-```
-
-### Native configs
-
-```bash
-bun run firebase:sync
-bun run firebase:sync:eas
-```
-
-### Deploy rules, indexes, storage, functions
+### 6. Ship rules & functions (when ready)
 
 ```bash
 bun run firebase:deploy
-
-# Or selectively
-firebase deploy --only firestore:rules
-firebase deploy --only firestore:indexes
-firebase deploy --only storage
-firebase deploy --only functions
 ```
-
-### Functions locally
-
-```bash
-cd functions
-bun install   # or npm install
-npm run build
-firebase emulators:start --only functions,firestore
-```
-
-Client helpers live in `src/lib/firebase/`. Expand `firestore.rules` / `storage.rules` per feature (default is locked down).
-
-Docs: https://firebase.google.com/docs/cli
 
 ---
 
-## Auth (Google · Apple · SMS · PNV)
+## Daily commands
 
-Full console + client guide: **[AUTH_SETUP.md](./AUTH_SETUP.md)**.
+| Command | Purpose |
+|---------|---------|
+| `bun start` / `start:dev-client` | Metro |
+| `bun run android` / `ios` | Local native |
+| `bun run build:dev:*` | EAS development client |
+| `bun run build:preview:*` | Internal preview |
+| `bun run build:prod:*` | Production |
+| `bun run update:dev` / `update:preview` | EAS Update |
+| `bun run lint` / `typecheck` / `test` | Quality |
+| `bun run firebase:deploy` | Rules + indexes + storage + functions |
+| `bun run firebase:sync` | Refresh Google Services files |
+
+---
+
+## Project layout
+
+```text
+src/
+├── app/              # Expo Router screens
+│   ├── (auth)/       # Login / register
+│   ├── (tabs)/       # Main tabs
+│   └── _layout.tsx   # Providers + splash
+├── components/ui/    # Shared UI
+├── features/         # Domain logic (start with auth/)
+├── lib/firebase/     # Auth, Firestore, Storage, callables
+├── providers/
+└── …
+functions/            # Cloud Functions (incl. PNV link)
+google-services/      # Native Firebase config (local only)
+AUTH_SETUP.md
+GOOGLE_SERVICES_EAS.md
+```
+
+Path aliases: `@/*` → `./src/*`.
+
+**Add a feature:** put services under `src/features/<name>/`, screens under `src/app/`, reuse `components/ui` and providers, extend rules as needed.
+
+---
+
+## Auth (short)
 
 | Module | Path |
 |--------|------|
 | Google / Apple | `src/lib/firebase/social-auth` |
-| SMS OTP | `src/lib/firebase/phone-auth` |
-| PNV (Android instant) | `src/lib/firebase/phone-pnv` |
+| SMS | `src/lib/firebase/phone-auth` |
+| PNV | `src/lib/firebase/phone-pnv` |
 | Server link | `functions/src/auth/link-verified-phone.ts` |
 
-Typical phone flow: **PNV first** → on `fallback-sms` run SMS OTP. iOS always uses SMS.
-
-After enabling providers and SHA fingerprints, **rebuild** the dev client (native modules cannot be added via OTA).
+Phone UX: try **PNV** on Android, fall back to **SMS**. iOS uses SMS. Rebuild after enabling native providers. See [AUTH_SETUP.md](./AUTH_SETUP.md).
 
 ---
 
-## Bun
+## Optional: sync reusable code from GemFort
 
-This template prefers [Bun](https://bun.sh) for speed and a single toolchain.
+Production patterns live in [GemFort](https://github.com/orbitratechnology/gemfort). Pull UI / Firebase client / agent skills without domain product code:
 
 ```bash
-# Install Bun (macOS / Linux)
-curl -fsSL https://bun.sh/install | bash
-
-# Project
-bun install
-bun run start
-bun run android
-bun run typecheck
+bun run sync:src      # UI, providers, hooks, firebase libs
+bun run sync:skills   # agent skills + IDE configs
 ```
 
-`package.json` scripts work with `bun run …`. If you use npm/yarn, run the same script names (`npm run android`, etc.). Commit `bun.lock` when using Bun.
+Or run the matching **workflow_dispatch** Actions. Private source: set secret / env `GEMFORT_TOKEN`.
 
 ---
 
-## agent-device (Callstack)
+## Agent / AI (optional)
 
-### What it is
+In-repo Expo skills, `AGENTS.md`, Cursor / Claude / VS Code settings. Prefer versioned docs: https://docs.expo.dev/versions/v57.0.0/
 
-**agent-device** is an agent-native CLI from [Callstack](https://github.com/callstack/agent-device) that gives coding agents hands and eyes on real apps. Agents can:
-
-- Open apps on iOS Simulator, Android Emulator, physical devices, TV, macOS, Linux, and a minimal web surface
-- Read **accessibility snapshots** (token-efficient UI trees with refs like `@e3`)
-- Tap, type, scroll, assert, and capture screenshots / video / logs / network / perf evidence
-- Inspect React Native internals (component trees, slow renders) via React DevTools passthrough
-
-It does **not** decide the test strategy — your coding agent (Cursor, Claude Code, Codex, etc.) interprets the screen and chooses commands. agent-device is the execution and evidence layer. Official Expo docs: https://docs.expo.dev/agents/agent-device/
-
-### Install
-
-Requires Node.js 22.12+ (web automation prefers 24+). Xcode for iOS, Android SDK/ADB for Android.
-
-```bash
-npm install -g agent-device@latest
-agent-device doctor
-agent-device --version
-agent-device help workflow
-```
-
-One-off without global install: `npx agent-device help workflow`.
-
-### Skill for agents
-
-```bash
-npx skills add callstackincubator/agent-device
-```
-
-Agents should run `agent-device --version` then `agent-device help workflow` before planning commands. Extra topics: `help react-native`, `help debugging`, `help react-devtools`, `help dogfood`.
-
-### Typical loop
-
-```bash
-agent-device boot --platform ios          # or android
-agent-device open yourapp --platform ios  # bundle id / app name
-agent-device snapshot -i                 # interactive a11y tree + refs
-agent-device press @e2 --settle
-agent-device fill @e3 "user@example.com"
-agent-device screenshot evidence.png
-agent-device logs path
-```
-
-Works with this template’s **development builds** (not Expo Go). After `bun run android` / `ios` or an EAS dev client install, point agent-device at the running app.
-
-More: https://oss.callstack.com/agent-device/ · https://github.com/callstack/agent-device
-
----
-
-## Agent / AI setup
-
-Synced from production Orbitra apps ([GemFort](https://github.com/orbitratechnology/gemfort)):
-
-| Path | Role |
-|------|------|
-| `AGENTS.md` | Forces versioned Expo 57 docs |
-| `CLAUDE.md` | Points Claude at `AGENTS.md` |
-| `skills-lock.json` | Lockfile for Expo skill sources/hashes |
-| `.agents/skills/` | **Vendored** Expo skills (full tree) |
-| `.claude/skills/` | Claude copies of key skills |
-| `.cursor/settings.json` | Firebase plugin for Cursor |
-| `.claude/settings.json` | `expo@claude-plugins-official` for Claude Code |
-| `.vscode/` | Format-on-save + Expo tools recommendation |
-
-### Skills included (in-repo)
-
-| Skill | Use for |
-|-------|--------|
-| `building-native-ui` | Native-feeling screens, navigation, controls, media, effects |
-| `expo-dev-client` | Development builds (required — not Expo Go) |
-| `eas-simulator` | Remote iOS/Android simulators on EAS |
-| `eas-update-insights` | EAS Update health and rollouts |
-| `expo-api-routes` | Expo Router API routes + EAS Hosting |
-| `expo-module` | Native modules / config plugins |
-| `expo-ui` | `@expo/ui` (universal / SwiftUI / Compose) |
-| `native-data-fetching` | React Query, caching, offline, loaders |
-| `upgrading-expo` | SDK upgrades and migrations |
-| `expo-skill-eval` | Skill evaluation harness |
-
-Re-sync from GemFort anytime:
-
-```bash
-# GitHub Actions: Actions → "Sync skills from gemfort" → Run workflow
-# or locally:
-bun run sync:skills
-# Private source: GEMFORT_TOKEN=… bun run sync:skills
-```
-
-Optional extras:
-
-```bash
-npx skills@latest add expo/skills --skill '*'   # refresh from upstream
-npx skills add callstackincubator/agent-device  # device QA skill
-```
-
-Always use **versioned** Expo docs: https://docs.expo.dev/versions/v57.0.0/
-
----
-
-## Firebase (client)
-
-- **Client**: `src/lib/firebase/` — warm-up with offline persistence, email auth, **social**, **phone SMS/PNV**, storage, callables.
-- **Rules**: start from `firestore.rules` and `storage.rules` (locked down; expand per feature).
-- **Functions**: `functions/` — includes `linkVerifiedPhone` for PNV JWT verification.
-- **Deploy**: `bun run firebase:deploy` (requires Firebase CLI + project).
-- **Native configs**: `bun run firebase:sync` / `firebase:sync:eas` — see [GOOGLE_SERVICES_EAS.md](./GOOGLE_SERVICES_EAS.md).
-
----
-
-## Adding a feature
-
-1. Create `src/features/<name>/` with services and types.
-2. Add screens under `src/app/` (or a route group).
-3. Reuse `src/components/ui/*` and providers.
-4. Extend Firestore rules and indexes as needed.
-5. Keep screens thin; put business logic in features.
+Device QA: [agent-device](https://github.com/callstack/agent-device) — `npx skills add callstackincubator/agent-device`.
 
 ---
 
 ## License
 
-MIT — use freely for commercial and personal projects.
-
----
-
-Built from production patterns (Expo 57 + Firebase). Customize placeholders and ship.
+MIT
