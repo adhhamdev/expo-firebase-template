@@ -5,7 +5,12 @@ export {
   signInWithCredential,
   signOut as firebaseSignOut,
   sendPasswordResetEmail,
+  sendEmailVerification,
   updateProfile,
+  updateEmail,
+  updatePassword,
+  deleteUser,
+  reload,
   onAuthStateChanged as onAuthStateChangedNative,
   linkWithCredential,
   PhoneAuthProvider,
@@ -15,8 +20,6 @@ export {
   GoogleAuthProvider,
   AppleAuthProvider,
   reauthenticateWithCredential,
-  updatePassword,
-  deleteUser,
   getAdditionalUserInfo,
 } from "./auth.native";
 
@@ -51,4 +54,10 @@ export async function createUserWithEmail(email: string, password: string) {
 
 export async function signOut() {
   return firebaseSignOut(getAuth());
+}
+
+export function requireCurrentUser() {
+  const user = getAuth().currentUser;
+  if (!user) throw new Error("You must be signed in to continue.");
+  return user;
 }

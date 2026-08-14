@@ -1,0 +1,17 @@
+export {
+  ensureUserProfile,
+  getUserProfile,
+  loginWithEmail,
+  registerWithEmail,
+  logout,
+  requestPasswordReset,
+  requestEmailVerification,
+  reloadCurrentUser,
+  reauthenticateWithEmail,
+  reauthenticate,
+  changePassword,
+  changeEmail,
+  updateAccountProfile,
+  deleteAccount,
+  type ReauthMethod,
+} from "./auth-service";

@@ -5,7 +5,12 @@ export {
   signInWithCredential,
   signOut,
   sendPasswordResetEmail,
+  sendEmailVerification,
   updateProfile,
+  updateEmail,
+  updatePassword,
+  deleteUser,
+  reload,
   onAuthStateChanged,
   linkWithCredential,
   PhoneAuthProvider,
@@ -15,7 +20,5 @@ export {
   GoogleAuthProvider,
   AppleAuthProvider,
   reauthenticateWithCredential,
-  updatePassword,
-  deleteUser,
   getAdditionalUserInfo,
-} from '@react-native-firebase/auth';
+} from "@react-native-firebase/auth";
