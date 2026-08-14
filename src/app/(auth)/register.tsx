@@ -47,7 +47,7 @@ export default function RegisterScreen() {
   }
 
   return (
-    <Screen scroll contentStyle={styles.content}>
+    <Screen contentContainerStyle={styles.content}>
       <Text style={[styles.title, { color: colors.text }]}>Create account</Text>
       <View style={styles.form}>
         <Input

@@ -43,7 +43,7 @@ export default function LoginScreen() {
   }
 
   return (
-    <Screen scroll contentStyle={styles.content}>
+    <Screen contentContainerStyle={styles.content}>
       <Text style={[styles.title, { color: colors.text }]}>Welcome back</Text>
       <Text style={[styles.sub, { color: colors.textSecondary }]}>
         Sign in to continue

@@ -4,6 +4,10 @@
  * debugging — technical details (Firestore index links, stack traces, Firebase
  * error codes) never reach the user.
  */
+export function mapAuthError(error: unknown, fallback = "Something went wrong. Please try again."): string {
+  return friendlyError(error, fallback);
+}
+
 export function friendlyError(error: unknown, fallback = 'Something went wrong. Please try again.'): string {
   const code =
     typeof error === 'object' && error !== null && 'code' in error

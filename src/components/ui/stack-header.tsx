@@ -5,7 +5,10 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Icon } from "@/components/ui/icon";
 import { Spacing, Typography } from "@/constants/design-tokens";
 import { useAppTheme } from "@/hooks/use-app-theme";
-import { nestedTabHubForPathname } from "@/navigation/tab-stack-nav";
+
+function nestedTabHubForPathname(_pathname: string): string | null {
+  return null;
+}
 
 type StackHeaderProps = {
   title: string;
@@ -54,8 +57,6 @@ export function StackHeader({
       return;
     }
 
-    // Prefer popping within this stack so we never jump to another tab
-    // (router.back() follows global history and often lands on Home).
     if (goBackInCurrentStack(navigation)) {
       return;
     }
