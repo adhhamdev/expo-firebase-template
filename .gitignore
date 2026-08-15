@@ -12,8 +12,10 @@ expo-env.d.ts
 .metro-health-check*
 
 # Generated native projects (CNG / prebuild) — regenerate with `npx expo prebuild`
-/android
-/ios
+/android/
+/ios/
+android/
+ios/
 
 # Native / signing secrets (never commit)
 *.jks
@@ -41,12 +43,25 @@ google-services*.json
 GoogleService-Info.plist
 GoogleService-Info*.plist
 
-# Logs & debug
+# Logs (all .log files, nested paths, and common tool logs)
 *.log
-npm-debug.*
-yarn-debug.*
-yarn-error.*
+**/*.log
+*.log.*
+logs/
+log/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 bun-debug.log*
+lerna-debug.log*
+.expo/xdl*.log
+metro-*.log
+react-native-packager.log
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+pui-debug.log
 
 # OS / editor
 .DS_Store
@@ -77,10 +92,6 @@ example
 
 # Firebase emulators / CLI local state
 .firebase/
-firebase-debug.log
-firestore-debug.log
-ui-debug.log
-pui-debug.log
 
 # EAS local artifacts
 *.apk

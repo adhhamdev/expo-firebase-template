@@ -5,8 +5,10 @@ node_modules/
 dist/
 web-build/
 
-/android
-/ios
+/android/
+/ios/
+android/
+ios/
 
 .env
 .env.*
@@ -18,6 +20,10 @@ GoogleService-Info.plist
 GoogleService-Info*.plist
 
 *.log
+**/*.log
+*.log.*
+logs/
+
 coverage/
 .agents/
 .claude/
