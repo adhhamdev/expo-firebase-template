@@ -50,7 +50,7 @@ cp .env.example .env
 # 1) Set identity in app.config.ts (APP_NAME, PACKAGE_NAME, …)
 # 2) Same PACKAGE_NAME in scripts/sync-firebase-native-configs.mjs
 firebase use <your-project-id>
-bun run firebase:sync
+bun run firebase:sync          # writes ./google-services.json + ./GoogleService-Info.plist
 bun run signing:fingerprints   # add SHA-1 / SHA-256 in Firebase Console, then sync again
 eas init                       # paste project ID into app.config.ts
 bun run android                # or: ios · build:dev:android
@@ -96,7 +96,7 @@ Full checklist: **[docs/SETUP.md](./docs/SETUP.md)** · Agent skills: **[docs/AG
 |-------|---|
 | [Setup from scratch](./docs/SETUP.md) | Clone → Firebase → EAS → first run |
 | [Signing & SHA fingerprints](./docs/SIGNING.md) | Debug, EAS, Play App Signing |
-| [Google Services](./docs/GOOGLE_SERVICES.md) | `firebase:sync` automation |
+| [Google Services](./docs/GOOGLE_SERVICES.md) | Root `google-services.json` + plist |
 | [Auth / OAuth / PNV](./docs/AUTH.md) | Providers and lifecycle helpers |
 | [App Check & Play ADI](./docs/APP_CHECK.md) | Debug vs production providers |
 | [Notifications](./docs/NOTIFICATIONS.md) | Channels, categories, tokens |
@@ -115,7 +115,7 @@ Full checklist: **[docs/SETUP.md](./docs/SETUP.md)** · Agent skills: **[docs/AG
 | `bun run android` / `ios` | Local native run |
 | `bun run build:dev:*` / `preview:*` / `prod:*` | EAS builds |
 | `bun run update:dev` / `update:preview` | EAS Update |
-| `bun run firebase:sync` / `firebase:sync:eas` | Native Google Services |
+| `bun run firebase:sync` / `firebase:sync:eas` | Native Google Services (project root) |
 | `bun run firebase:deploy` | Rules, indexes, storage, functions |
 | `bun run signing:fingerprints` | Print Android SHA-1 / SHA-256 |
 | `bun run skills:install` | Install/refresh agent skills |
@@ -133,7 +133,8 @@ src/lib/notifications/
 src/components/ui/
 src/providers/
 functions/
-google-services/         # Local native configs (gitignored)
+google-services.json     # Android (gitignored; from firebase:sync)
+GoogleService-Info.plist # iOS (gitignored; from firebase:sync)
 docs/
 docs/assets/             # README brand marks (Expo, Firebase)
 scripts/

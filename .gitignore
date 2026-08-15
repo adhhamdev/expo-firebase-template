@@ -35,14 +35,11 @@ certs/
 .env.*
 !.env.example
 
-# Firebase native configs (local + any path). Use EAS file env vars for cloud builds.
+# Firebase native configs at project root (never commit). Use EAS file env for cloud builds.
 google-services.json
 google-services*.json
 GoogleService-Info.plist
 GoogleService-Info*.plist
-google-services/*.json
-google-services/*.plist
-!google-services/README.md
 
 # Logs & debug
 *.log
@@ -64,7 +61,6 @@ coverage/
 .nyc_output/
 
 # Package managers
-# Keep lockfiles committed; ignore only local tool caches
 .yarn/*
 !.yarn/patches
 !.yarn/plugins

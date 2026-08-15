@@ -38,8 +38,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       ITSAppUsesNonExemptEncryption: false,
     },
     googleServicesFile:
-      process.env.GOOGLE_SERVICES_PLIST ??
-      "./google-services/GoogleService-Info.plist",
+      process.env.GOOGLE_SERVICES_PLIST ?? "./GoogleService-Info.plist",
   },
   android: {
     package: PACKAGE_NAME,
@@ -52,8 +51,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     icon: "./assets/images/icon.png",
     googleServicesFile:
-      process.env.GOOGLE_SERVICES_JSON ??
-      "./google-services/google-services.json",
+      process.env.GOOGLE_SERVICES_JSON ?? "./google-services.json",
   },
   plugins: [
     "expo-router",

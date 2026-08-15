@@ -1,27 +1,12 @@
-# Start from .gitignore patterns, then ignore extra upload bloat for EAS Build.
-# https://docs.expo.dev/build-reference/easignore/
+# Keep EAS uploads lean — mirror .gitignore patterns that should not ship to builders
 
 node_modules/
 .expo/
 dist/
-dist-web/
 web-build/
-expo-env.d.ts
 
 /android
 /ios
-
-*.jks
-*.keystore
-*.p8
-*.p12
-*.key
-*.mobileprovision
-*.pem
-credentials.json
-credentials/
-keystores/
-certs/
 
 .env
 .env.*
@@ -31,27 +16,12 @@ google-services.json
 google-services*.json
 GoogleService-Info.plist
 GoogleService-Info*.plist
-google-services/*.json
-google-services/*.plist
 
 *.log
 coverage/
-.nyc_output/
-.DS_Store
-.idea/
-*.tsbuildinfo
-.firebase/
-
-# Agent / docs not needed on builders
 .agents/
 .claude/
 .cursor/
-AGENTS.md
-CLAUDE.md
-skills-lock.json
 docs/
-*.plan.md
-/dogfood-output
-
-# Git history not required in archive
-.git/
+*.md
+!README.md

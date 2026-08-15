@@ -1,10 +1,13 @@
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
+import { copyFileSync, existsSync, mkdtempSync, rmSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 
 /**
  * Download Firebase native configs for the single app (one Android + one iOS app).
+ * Writes to the **project root** (Expo / RNFB convention):
+ *   ./google-services.json
+ *   ./GoogleService-Info.plist
  * Must match PACKAGE_NAME in app.config.ts.
  *
  * Usage:
@@ -18,8 +21,8 @@ const uploadToEas = process.argv.includes("--upload-eas");
 /** Keep in sync with app.config.ts → PACKAGE_NAME */
 const PACKAGE_NAME = "app.yourapp";
 
-const androidOut = "google-services/google-services.json";
-const iosOut = "google-services/GoogleService-Info.plist";
+const androidOut = "google-services.json";
+const iosOut = "GoogleService-Info.plist";
 
 const npx = process.platform === "win32" ? "npx.cmd" : "npx";
 
@@ -56,8 +59,6 @@ function findApp(apps, key, value) {
   }
   return app.appId;
 }
-
-mkdirSync(resolve(root, "google-services"), { recursive: true });
 
 const androidApps = firebaseJson(["apps:list", "ANDROID"]);
 const iosApps = firebaseJson(["apps:list", "IOS"]);
@@ -141,6 +142,6 @@ try {
 
 console.log(
   uploadToEas
-    ? "Native configs synced locally and uploaded to EAS (all environments use the same files)."
-    : "Native configs synced under google-services/. Pass --upload-eas to push to EAS.",
+    ? "Native configs synced to project root and uploaded to EAS (all environments use the same files)."
+    : "Native configs synced to project root (google-services.json, GoogleService-Info.plist). Pass --upload-eas to push to EAS.",
 );
